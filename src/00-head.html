@@ -1,0 +1,289 @@
+<title>Bloco a Bloco</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/blockly@11.2.2/blockly_compressed.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/blockly@11.2.2/msg/pt-br.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+/* Layout: estúdio — menu no topo; editor de blocos (Código/Fantasias/Sons) à esquerda; palco, atores e painel de ajuda à direita; empilha no celular */
+:root {
+  --bg: #e8edf2; --panel: #ffffff; --panel-2: #f3f6f9; --ink: #17202b; --muted: #5a6777; --line: #d2dae3;
+  --accent: #0f7c8a; --accent-ink: #ffffff; --glow: #f2b705; --ok: #1f8a4c; --warn: #b5560d; --danger: #b8322a;
+  --stage-edge: #b9c4d0;
+  --f-display: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141a; --panel: #18202a; --panel-2: #202a36; --ink: #e4eaf1; --muted: #9aa8b8; --line: #2d3947;
+    --accent: #3bb3c2; --accent-ink: #06232a; --glow: #f5c842; --ok: #4cc27f; --warn: #f09a52; --danger: #ef6b62; --stage-edge: #3a4756;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141a; --panel: #18202a; --panel-2: #202a36; --ink: #e4eaf1; --muted: #9aa8b8; --line: #2d3947;
+  --accent: #3bb3c2; --accent-ink: #06232a; --glow: #f5c842; --ok: #4cc27f; --warn: #f09a52; --danger: #ef6b62; --stage-edge: #3a4756;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45;
+  padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px)); padding-block: 10px 24px; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 600; margin: 0; text-wrap: balance; }
+button, select, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--glow); outline-offset: 2px; }
+.btn { border: 1px solid var(--line); background: var(--panel-2); border-radius: 8px; padding: 6px 11px; font-weight: 700; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn.go { background: var(--ok); color: #fff; border-color: transparent; font-size: 1.05rem; padding: 6px 14px; }
+.btn.small { padding: 3px 8px; font-size: .84rem; }
+.btn.danger { color: var(--danger); }
+.btn.on { background: var(--accent); color: var(--accent-ink); }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.label { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 700; }
+.muted { color: var(--muted); }
+
+/* Topo e menu */
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 10px; }
+.brand h1 { font-size: 1.5rem; } .brand h1 span { color: var(--accent); }
+.menu { display: flex; gap: 4px; flex-wrap: wrap; }
+.menu .btn { font-weight: 600; font-size: .88rem; }
+#projTitle { border: 1px solid transparent; background: transparent; font-family: var(--f-display); font-size: 1.05rem; padding: 3px 8px; border-radius: 8px; min-width: 0; width: 14em; max-width: 100%; }
+#projTitle:hover, #projTitle:focus { border-color: var(--line); background: var(--panel); }
+.people { margin-left: auto; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.person { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px 2px 2px; border-radius: 999px; background: var(--panel); border: 2px solid var(--pc, var(--line)); font-size: .82rem; }
+.person img { width: 22px; height: 22px; border-radius: 50%; }
+.person small { color: var(--muted); }
+.mode-chip { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.banner { font-size: .86rem; padding: 8px 12px; border-radius: 8px; background: var(--panel); border: 1px solid var(--warn); margin-bottom: 10px; }
+
+/* Grade principal */
+.studio { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 492px); gap: 12px; align-items: start; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); min-width: 0; }
+.pad { padding: 12px; }
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); padding: 6px 8px 0; flex-wrap: wrap; align-items: end; }
+.tabs button { border: 1px solid transparent; border-bottom: 0; background: transparent; padding: 7px 12px; border-radius: 8px 8px 0 0; font-weight: 700; color: var(--muted); }
+.tabs button[aria-selected="true"] { background: var(--panel-2); border-color: var(--line); color: var(--ink); }
+.tabs .spacer { flex: 1; }
+.tabs .editing { font-size: .82rem; color: var(--muted); padding-bottom: 8px; display: inline-flex; gap: 4px; align-items: center; }
+#blocklyDiv { height: max(500px, calc(100vh - 140px)); width: 100%; }
+.side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+/* Palco */
+.stage-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 10px; }
+.stage-bar select { border: 1px solid var(--line); background: var(--panel-2); border-radius: 8px; padding: 5px 6px; font-size: .86rem; }
+.stage-bar .check { font-size: .84rem; color: var(--muted); display: inline-flex; gap: 4px; align-items: center; }
+.stage-bar .right { margin-left: auto; display: flex; gap: 4px; }
+.stage-box { position: relative; margin: 0 10px; border: 1px solid var(--stage-edge); border-radius: 6px; overflow: hidden; background: #fff; }
+#stage { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; touch-action: none; }
+.stage-box:fullscreen { display: grid; place-items: center; background: #000; border: 0; border-radius: 0; margin: 0; }
+.stage-box:fullscreen #stage { width: min(100vw, calc(100vh * 4 / 3)); height: auto; }
+.monitors { position: absolute; inset: 0; pointer-events: none; }
+.monitor { position: absolute; background: rgba(255,255,255,.94); color: #17202b; border: 1px solid #c8d1db; border-radius: 6px; padding: 2px 4px 2px 8px; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; max-width: 220px; pointer-events: auto; cursor: move; user-select: none; touch-action: none; }
+.monitor b { background: #ef6a2c; color: #fff; border-radius: 5px; padding: 0 6px; min-width: 24px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.monitor.large { padding: 3px 10px; } .monitor.large span { display: none; } .monitor.large b { font-size: 18px; background: #ef6a2c; }
+.monitor.list { flex-direction: column; align-items: stretch; padding: 4px; min-width: 110px; }
+.monitor.list ol { margin: 2px 0 0; padding-left: 24px; max-height: 140px; overflow: auto; }
+.monitor.list li { background: #d4513e; color: #fff; border-radius: 4px; padding: 0 5px; margin: 1px 0; }
+.ask { position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; gap: 6px; background: rgba(255,255,255,.96); border: 2px solid #35a3d4; border-radius: 10px; padding: 6px; flex-wrap: wrap; }
+.ask .q { width: 100%; font-weight: 700; color: #17202b; font-size: 13px; }
+.ask input { flex: 1; min-width: 0; border: 1px solid #c8d1db; border-radius: 6px; padding: 4px 8px; color: #17202b; background: #fff; }
+.ask button { border: 0; background: #35a3d4; color: #fff; border-radius: 6px; padding: 4px 10px; font-weight: 700; }
+.readout { display: flex; flex-wrap: wrap; gap: 2px 12px; font-family: var(--f-mono); font-size: .76rem; color: var(--muted); padding: 6px 12px 0; font-variant-numeric: tabular-nums; }
+.narr { margin: 8px 10px 10px; border-left: 4px solid var(--glow); background: var(--panel-2); border-radius: 0 8px 8px 0; padding: 8px 10px; min-height: 52px; font-size: .92rem; }
+.narr p { margin: 2px 0 0; }
+
+/* Modo jogador */
+body.player #editorCard, body.player .side > .card:not(:first-child), body.player .narr, body.player .readout { display: none; }
+body.player .studio { grid-template-columns: minmax(0, 1fr); }
+body.player .side { max-width: min(960px, calc((100vh - 120px) * 4 / 3)); width: 100%; margin: 0 auto; }
+
+/* Atores */
+.sprite-pane { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 10px; }
+.sprite-props { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: .84rem; margin-bottom: 8px; }
+.sprite-props label { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); }
+.sprite-props input, .sprite-props select { width: 4.4em; border: 1px solid var(--line); background: var(--panel-2); border-radius: 6px; padding: 2px 5px; }
+.sprite-props input.name { width: 8em; } .sprite-props select { width: auto; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
+.tile { position: relative; border: 2px solid var(--line); border-radius: 8px; background: var(--panel-2); padding: 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: .74rem; min-width: 0; }
+.tile img { width: 52px; height: 42px; object-fit: contain; }
+.tile span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile.sel { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--panel)); }
+.tile .dots { position: absolute; top: 2px; right: 2px; display: flex; gap: 2px; }
+.tile .dots i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--panel); }
+.stage-tile { display: flex; flex-direction: column; gap: 6px; }
+.add-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.varlist { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 8px; font-size: .82rem; }
+.varlist label { display: inline-flex; gap: 4px; align-items: center; color: var(--muted); }
+
+/* Fantasias e sons */
+.assets { display: grid; grid-template-columns: 180px minmax(0, 1fr); min-height: 500px; }
+.asset-list { border-right: 1px solid var(--line); padding: 8px; display: flex; flex-direction: column; gap: 6px; overflow: auto; max-height: calc(100vh - 140px); }
+.asset { display: flex; align-items: center; gap: 8px; border: 2px solid var(--line); border-radius: 8px; padding: 4px 6px; background: var(--panel-2); font-size: .84rem; text-align: left; }
+.asset.sel { border-color: var(--accent); }
+.asset img { width: 44px; height: 36px; object-fit: contain; background: #fff; border-radius: 4px; }
+.asset-main { padding: 12px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.lib { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 8px; }
+.lib button { border: 1px solid var(--line); background: var(--panel-2); border-radius: 8px; padding: 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: .78rem; }
+.lib img { width: 60px; height: 50px; object-fit: contain; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.row input[type=text] { border: 1px solid var(--line); background: var(--panel-2); border-radius: 6px; padding: 4px 8px; }
+
+/* Ajuda */
+.help-tabs button { font-size: .86rem; padding: 6px 9px; }
+.help-body { padding: 12px; max-height: 440px; overflow: auto; }
+.lesson h3 { font-size: 1.08rem; margin-bottom: 4px; }
+.lesson ol { padding-left: 0; list-style: none; margin: 8px 0; display: flex; flex-direction: column; gap: 6px; }
+.lesson li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 6px; align-items: start; }
+.lesson li .ck { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; font-size: .75rem; font-weight: 700; color: #fff; }
+.lesson li.ok .ck { background: var(--ok); border-color: var(--ok); }
+.lesson li.ok span { color: var(--muted); }
+.lesson-nav { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.lesson-nav select { max-width: 100%; border: 1px solid var(--line); background: var(--panel-2); border-radius: 6px; padding: 3px 6px; }
+.log { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.msg { border-radius: 10px; padding: 8px 10px; background: var(--panel-2); font-size: .9rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.me { background: color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.msg small { display: block; color: var(--muted); font-size: .74rem; margin-bottom: 2px; }
+.console { font-family: var(--f-mono); font-size: .8rem; display: flex; flex-direction: column; gap: 2px; }
+.console div { border-bottom: 1px dashed var(--line); padding: 2px 0; overflow-wrap: anywhere; }
+.console small { color: var(--muted); }
+textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2); border-radius: 8px; padding: 8px; resize: vertical; min-height: 64px; }
+
+/* Modais e bolha de valor */
+.overlay { position: fixed; inset: 0; background: rgba(10,15,20,.45); display: grid; place-items: center; z-index: 100; padding: 16px; }
+.modal { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; width: min(560px, 100%); max-height: 90vh; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
+.modal h2 { font-size: 1.2rem; }
+.modal input[type=text] { border: 1px solid var(--line); background: var(--panel-2); border-radius: 8px; padding: 7px 10px; width: 100%; }
+.proc-preview { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: #e8507a; color: #fff; border-radius: 10px; padding: 8px 10px; font-weight: 700; }
+.proc-preview input { width: 7em; border: 0; border-radius: 999px; padding: 2px 8px; color: #17202b; }
+.proc-preview .bool { clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); border-radius: 0; padding: 2px 14px; }
+.proc-preview .lbl { width: 6em; background: transparent; border: 1px dashed rgba(255,255,255,.7); color: #fff; }
+.valbubble { position: fixed; z-index: 90; background: var(--panel); color: var(--ink); border: 2px solid var(--accent); border-radius: 10px; padding: 4px 10px; font-weight: 700; pointer-events: none; max-width: 300px; overflow-wrap: anywhere; box-shadow: 0 6px 16px rgba(0,0,0,.18); }
+.paint { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.paint canvas { width: 100%; max-width: 380px; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 8px; touch-action: none;
+  background-color: #fff; background-image: linear-gradient(45deg, #eee 25%, transparent 25%), linear-gradient(-45deg, #eee 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #eee 75%), linear-gradient(-45deg, transparent 75%, #eee 75%);
+  background-size: 16px 16px; background-position: 0 0, 0 8px, 8px -8px, -8px 0; }
+.swatches { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.swatches button { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); }
+.swatches button.sel { border-color: var(--ink); transform: scale(1.12); }
+.swatches input[type=color] { width: 34px; height: 28px; border: 0; background: none; padding: 0; }
+.tools button.sel { background: var(--accent); color: var(--accent-ink); }
+
+/* Blockly */
+.blocklyToolboxDiv { background: var(--panel-2) !important; }
+.blocklyTreeLabel { font-family: var(--f-body); font-size: .84rem; color: var(--ink); }
+.blocklyTreeRow { padding: 5px 4px !important; height: auto !important; line-height: 1.3 !important; }
+.peer-sel > .blocklyPath { stroke: var(--pc) !important; stroke-width: 4px !important; }
+.bab-running > .blocklyPath { filter: drop-shadow(0 0 5px #f5c842) drop-shadow(0 0 2px #f5c842); }
+.blocklyText { font-family: var(--f-body) !important; }
+
+@media (max-width: 1050px) {
+  .studio { grid-template-columns: minmax(0, 1fr); }
+  .side { order: -1; }
+  #blocklyDiv { height: 72vh; }
+  .assets { grid-template-columns: minmax(0, 1fr); }
+  .asset-list { border-right: 0; border-bottom: 1px solid var(--line); flex-direction: row; flex-wrap: wrap; max-height: none; }
+}
+@media (max-width: 520px) { .sprite-pane { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .bab-running > .blocklyPath { filter: none; } }
+</style>
+
+<header class="top">
+  <div class="brand"><h1>Bloco <span>a</span> Bloco</h1></div>
+  <nav class="menu" aria-label="Arquivo">
+    <button class="btn small" id="mNew">Novo</button>
+    <button class="btn small" id="mOpen" title="Abre um projeto salvo (.json) ou um projeto do Scratch (.sb3)">Abrir / importar .sb3</button>
+    <button class="btn small" id="mSave">Salvar no computador</button>
+  </nav>
+  <input id="projTitle" aria-label="Nome do projeto" value="Meu projeto" maxlength="60">
+  <div class="people" id="people"><span class="mode-chip">Carregando…</span></div>
+</header>
+<div class="banner" id="banner" hidden></div>
+
+<main class="studio">
+  <section class="card" id="editorCard">
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="code" aria-selected="true">Código</button>
+      <button role="tab" data-tab="costumes" aria-selected="false" id="tabCostumes">Fantasias</button>
+      <button role="tab" data-tab="sounds" aria-selected="false">Sons</button>
+      <span class="spacer"></span>
+      <label class="editing"><input type="checkbox" id="simpleChk"> Modo iniciante</label>
+    </div>
+    <div id="paneCode"><div id="blocklyDiv"></div></div>
+    <div id="paneCostumes" class="assets" hidden></div>
+    <div id="paneSounds" class="assets" hidden></div>
+  </section>
+
+  <aside class="side">
+    <div class="card">
+      <div class="stage-bar">
+        <button class="btn go" id="flagBtn" title="Começar (dispara “quando ▶ for clicado”)" aria-label="Começar">▶</button>
+        <button class="btn" id="stopBtn" title="Parar tudo" aria-label="Parar">■</button>
+        <select id="speedSel" aria-label="Velocidade">
+          <option value="normal">Normal</option>
+          <option value="slow">Devagar, mostrando cada bloco</option>
+          <option value="step">Passo a passo</option>
+        </select>
+        <button class="btn primary" id="stepBtn" hidden>Próximo ▸</button>
+        <label class="check" title="Roda o mais rápido possível, sem esperar o desenho da tela"><input type="checkbox" id="turboChk"> Turbo</label>
+        <label class="check" id="syncWrap" hidden><input type="checkbox" id="syncChk" checked> rodar junto</label>
+        <span class="right">
+          <button class="btn small" id="playerBtn" title="Modo jogador: só o palco">▣</button>
+          <button class="btn small" id="fullBtn" title="Tela cheia">⛶</button>
+        </span>
+      </div>
+      <div class="stage-box" id="stageBox">
+        <canvas id="stage" width="480" height="360" aria-label="Palco" tabindex="0"></canvas>
+        <div class="monitors" id="monitors"></div>
+        <form class="ask" id="askBox" hidden><span class="q" id="askQ"></span><input id="askInput" aria-label="Sua resposta" autocomplete="off"><button>OK</button></form>
+      </div>
+      <div class="readout"><span id="roMouse">mouse x: 0 y: 0</span><span id="roSprite"></span></div>
+      <div class="narr" aria-live="polite"><span class="label">O que está acontecendo</span><p id="narr">Clique em ▶ para começar. Clique num script para rodar só ele. Escolha “Devagar” para ver cada bloco funcionando.</p></div>
+    </div>
+
+    <div class="card pad">
+      <div class="sprite-pane">
+        <div>
+          <div class="sprite-props" id="spriteProps"></div>
+          <div class="tiles" id="tiles"></div>
+          <div class="add-row">
+            <button class="btn small" id="addSpriteBtn">+ Ator da biblioteca</button>
+            <button class="btn small" id="paintSpriteBtn">✎ Pintar ator</button>
+            <button class="btn small" id="uploadSpriteBtn">⇪ Enviar imagem</button>
+          </div>
+          <div class="varlist" id="varList"></div>
+        </div>
+        <div class="stage-tile" id="stageTile"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tabs help-tabs" role="tablist">
+        <button role="tab" data-help="lesson" aria-selected="true">Lições</button>
+        <button role="tab" data-help="tutor" aria-selected="false" id="tutorTab">Tutor</button>
+        <button role="tab" data-help="chat" aria-selected="false" id="chatTab">Conversa</button>
+        <button role="tab" data-help="console" aria-selected="false" id="consoleTab">Console</button>
+      </div>
+      <div class="help-body" id="helpLesson"></div>
+      <div class="help-body" id="helpTutor" hidden>
+        <div class="log" id="tutorLog"><div class="msg"><small>Tutor</small>Pergunte qualquer coisa sobre programação ou sobre o seu projeto. Dica: clique com o botão direito num script e escolha “Explicar este script”.</div></div>
+        <textarea id="tutorQ" placeholder="Ex.: Como faço o personagem pular?"></textarea>
+        <div class="row" style="margin-top:6px"><button class="btn primary" id="tutorAsk">Perguntar</button><span class="muted" id="tutorState"></span></div>
+      </div>
+      <div class="help-body" id="helpChat" hidden>
+        <div class="log" id="chatLog"><p class="muted" style="margin:0">Mensagens para quem está no projeto agora. Elas não ficam salvas.</p></div>
+        <form class="row" id="chatForm"><input type="text" id="chatInput" maxlength="300" placeholder="Escreva para a equipe" style="flex:1;min-width:0" aria-label="Mensagem"><button class="btn primary">Enviar</button></form>
+      </div>
+      <div class="help-body" id="helpConsole" hidden>
+        <div class="row" style="margin-bottom:8px"><span class="muted">O bloco “mostrar no console” (Jogo+) escreve aqui. Ótimo para descobrir erros.</span><button class="btn small" id="consoleClear">Limpar</button></div>
+        <div class="console" id="consoleLog"></div>
+      </div>
+    </div>
+  </aside>
+</main>
+<input type="file" id="fileIn" hidden>
+<div id="modalRoot"></div>
