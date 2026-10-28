@@ -250,7 +250,7 @@ function blockText(b) {
   return lines.map(line => line.replace(/%%/g, "\u0001").replace(/%\d/g, () => {
     const [k, name, src] = specs[i++] || [];
     if (k === "S") return "";
-    if (k === "D") { const v = b.fields?.[name]; const f = (STATIC[src] || []).find(o => o[1] === v); return `[${f ? f[0] : v}]`; }
+    if (k === "D") { const v = b.fields?.[name]; if (v === undefined || v === "") return "[…]"; const f = (STATIC[src] || []).find(o => o[1] === v); return `[${f ? f[0] : v}]`; }
     const inp = b.inputs?.[name], inner = inp?.block || inp?.shadow, t = blockText(inner);
     return k === "B" ? `<${t}>` : `(${t})`;
   }).replace(/\u0001/g, "%")).filter(Boolean).join(" ").replace(/\s+/g, " ").trim();

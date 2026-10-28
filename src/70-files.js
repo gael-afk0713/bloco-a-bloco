@@ -10,7 +10,7 @@ function modal(html, onMount) {
   onMount?.(root.querySelector(".modal"), close);
 }
 function askName(title, label, placeholder, allowLocal, cb) {
-  modal(`<h2>${esc(title)}</h2><label class="label" for="nmIn">${esc(label)}</label><input type="text" id="nmIn" placeholder="${esc(placeholder)}" maxlength="40">
+  modal(`<h2>${esc(title)}</h2><label class="label" for="nmIn">${esc(label)}</label><input type="text" id="nmIn" placeholder="Escreva um nome (ex.: ${esc(placeholder)})" maxlength="40">
     ${allowLocal && curSid !== STAGE ? `<label class="row"><input type="checkbox" id="nmLocal"> Só para este ator (cada clone tem a sua)</label>` : ""}
     <div class="row"><button class="btn primary" id="nmOk">Criar</button><button class="btn" data-close>Cancelar</button></div>`, (m, close) => {
     const go = () => { const v = $("#nmIn").value || placeholder; const local = $("#nmLocal")?.checked; close(); cb(v, local); };

@@ -243,6 +243,7 @@ textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2
     <button class="btn small" id="mNew">Novo</button>
     <button class="btn small" id="mOpen" title="Abre um projeto salvo (.json) ou um projeto do Scratch (.sb3)">Abrir / importar .sb3</button>
     <button class="btn small" id="mSave">Salvar no computador</button>
+    <button class="btn small" id="mExport" title="Gera um arquivo .sb3 que abre no Scratch (Arquivo → Carregar do seu computador)">Exportar para o Scratch</button>
   </nav>
   <input id="projTitle" aria-label="Nome do projeto" value="Meu projeto" maxlength="60">
   <div class="people" id="people"><span class="mode-chip">Carregando…</span></div>
@@ -293,11 +294,6 @@ textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2
       <div class="narr" aria-live="polite"><span class="label">O que está acontecendo</span><p id="narr">Clique em ▶ para começar. Clique num script para rodar só ele. Escolha “Devagar” para ver cada bloco funcionando.</p></div>
     </div>
 
-    <section class="card section" aria-labelledby="selTitle">
-      <header class="sec-head"><span class="sec-icon" aria-hidden="true">✦</span><div><span class="label">Selecionado</span><h2 id="selTitle">Ator</h2></div></header>
-      <div class="sprite-props" id="spriteProps"></div>
-    </section>
-
     <div class="pair">
       <section class="card section" aria-labelledby="actorsTitle">
         <header class="sec-head"><span class="sec-icon" aria-hidden="true">☺</span><div><span class="label">Personagens e objetos</span><h2 id="actorsTitle">Atores</h2></div></header>
@@ -313,6 +309,11 @@ textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2
         <div class="stage-tile" id="stageTile"></div>
       </section>
     </div>
+
+    <section class="card section" aria-labelledby="selTitle">
+      <header class="sec-head"><span class="sec-icon" aria-hidden="true">✦</span><div><span class="label">Configurações do selecionado</span><h2 id="selTitle">Ator</h2></div></header>
+      <div class="sprite-props" id="spriteProps"></div>
+    </section>
 
     <section class="card section" aria-labelledby="varsTitle" id="varSection" hidden>
       <header class="sec-head"><span class="sec-icon" aria-hidden="true">#</span><div><span class="label">Aparece no palco</span><h2 id="varsTitle">Variáveis e listas</h2></div></header>

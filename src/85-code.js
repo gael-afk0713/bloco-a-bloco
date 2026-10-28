@@ -266,8 +266,10 @@ function generateCode(L, scope, comments) {
   if (py) {
     out.push(`# ${title}: código gerado pelo Bloco a Bloco a partir dos seus blocos.`);
     out.push("# Funções como mover() e dizer() têm o mesmo nome dos blocos, em português.");
+    out.push("# Atenção: “bloco_a_bloco” é uma biblioteca de faz de conta para mostrar a ideia;");
+    out.push("# a lógica (laços, se, variáveis, contas) é Python de verdade, mas este arquivo não roda sozinho.");
     out.push("from bloco_a_bloco import *", "import random, math", "");
-    if (globals.length || lists.length) { out.push("# Variáveis e listas"); globals.forEach(([n, v]) => out.push(`${ident(n)} = ${typeof v === "number" || (String(v).trim() !== "" && Number.isFinite(Number(v))) ? Number(v) : quote(v)}`)); lists.forEach(n => out.push(`${ident(n)} = []`)); out.push(""); }
+    if (globals.length || lists.length) { out.push("# Variáveis e listas (com o valor que têm agora)", ...(comments ? ["# Dentro de uma função, “global” avisa que a variável é esta daqui de fora."] : [])); globals.forEach(([n, v]) => out.push(`${ident(n)} = ${typeof v === "number" || (String(v).trim() !== "" && Number.isFinite(Number(v))) ? Number(v) : quote(v)}`)); lists.forEach(n => out.push(`${ident(n)} = []`)); out.push(""); }
     sections.forEach(s => out.push(...s));
     if (!sections.length) out.push("# Ainda não há scripts aqui. Monte blocos na aba Código e volte.");
   } else {
@@ -275,7 +277,7 @@ function generateCode(L, scope, comments) {
     out.push(`\t// ${title}: código gerado pelo Bloco a Bloco a partir dos seus blocos.`);
     out.push("\t// Funções como mover() e dizer() têm o mesmo nome dos blocos.", "");
     if (globals.length || lists.length) { out.push("\t// Variáveis e listas"); globals.forEach(([n, v]) => { const isNum = typeof v === "number" || (String(v).trim() !== "" && Number.isFinite(Number(v))); out.push(`\t${isNum ? "real" : "cadeia"} ${ident(n)} = ${isNum ? Number(v) : quote(v)}`); }); lists.forEach(n => out.push(`\tcadeia ${ident(n)}[100]  // lista`)); out.push(""); }
-    out.push("\tcadeia resposta = \"\"", "");
+    if (sections.some(s => s.some(l => /\bresposta\b/.test(l)))) out.push("\tcadeia resposta = \"\"  // guarda o que a pessoa digitar", "");
     out.push("\tfuncao inicio()", "\t{");
     if (flags.length) { out.push("\t\t// Quando o ▶ é clicado, estes scripts começam (no Bloco a Bloco eles rodam ao mesmo tempo)"); flags.forEach(fn => out.push(`\t\t${fn}()`)); }
     else out.push("\t\t// Nenhum script começa com “quando ▶ for clicado”.");

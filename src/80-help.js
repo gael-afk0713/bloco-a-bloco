@@ -274,5 +274,5 @@ async function connect() {
 }
 renderLesson(); openHelp("lesson");
 setInterval(tick, 1000 / 30);
-window.__bab = { project, rt, importSb3, loadProjectData, get curSid() { return curSid; } };
+window.__bab = { project, rt, importSb3, loadProjectData, exportSb3: (...a) => exportSb3(...a), get curSid() { return curSid; } };
 connect();

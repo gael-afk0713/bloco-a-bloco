@@ -69,7 +69,7 @@ const BACKDROP_GEN = {
 
 // ---------- Áudio: efeitos sintetizados, tambores, instrumentos e sons enviados ----------
 let audioCtx = null;
-const actx = () => { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === "suspended") audioCtx.resume(); return audioCtx; };
+const actx = () => { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === "suspended" && !(window.OfflineAudioContext && audioCtx instanceof OfflineAudioContext)) audioCtx.resume(); return audioCtx; };
 const SOUNDS = {
   pop: { name: "Pop", dur: .12 }, bip: { name: "Bip", dur: .2 }, moeda: { name: "Moeda", dur: .35 }, pulo: { name: "Pulo", dur: .3 },
   laser: { name: "Laser", dur: .35 }, explosao: { name: "Explosão", dur: .7 }, tambor: { name: "Tambor", dur: .3 }, sino: { name: "Sino", dur: 1.2 },

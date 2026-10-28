@@ -161,7 +161,12 @@ function explain(b, th) {
     case "ct_wait": return `Pausa de ${v("SECS")} segundos. Nada neste script acontece até o tempo passar.`;
     case "ct_repeat": return `Repetir ${v("TIMES")} vezes os blocos de dentro.`;
     case "ct_forever": return "Repetir para sempre os blocos de dentro, até alguém clicar em ■.";
-    case "ct_if": case "ct_ifelse": { let r = "?"; try { r = bool(inp(b, "COND", th)) ? "verdadeira" : "falsa"; } catch (_) {} return `Testando a condição: agora ela é ${r}. ${r === "verdadeira" ? "Então os blocos de dentro vão rodar." : (b.type === "ct_ifelse" ? "Então roda a parte do “senão”." : "Então os blocos de dentro são pulados.")}`; }
+    case "ct_if": case "ct_ifelse": {
+      let r = "?"; try { r = bool(inp(b, "COND", th)) ? "verdadeira" : "falsa"; } catch (_) {}
+      const cond = b.inputs?.COND?.block ? `“${blockText(b.inputs.COND.block)}”` : "a condição (vazia: encaixe um bloco hexagonal)";
+      return `${who} testa ${cond}: agora é ${r}. ${r === "verdadeira" ? "Então os blocos de dentro vão rodar." : (b.type === "ct_ifelse" ? "Então roda a parte do “senão”." : "Então os blocos de dentro são pulados.")}`;
+    }
+    case "ct_waituntil": return `${who} espera até “${b.inputs?.COND?.block ? blockText(b.inputs.COND.block) : "…"}” ficar verdadeiro.`;
     case "var_set": return `A variável “${F(b, "VAR")}” passa a guardar ${v("VALUE")}.`;
     case "var_change": { const n = F(b, "VAR"); const m = findVar(t, n); return `A variável “${n}” valia ${str(m.get(n) ?? 0)} e ganha ${v("VALUE")}: fica ${num(m.get(n)) + num(v("VALUE"))}.`; }
     case "ev_broadcast": return `Mandando a mensagem “${F(b, "MSG")}” para todos. Quem tem “quando eu receber ${F(b, "MSG")}” começa agora.`;
@@ -242,6 +247,13 @@ function renderProps() {
   $("#pDel").onclick = () => confirmBox(`Apagar o ator “${d.name}” e todos os scripts dele? Isso também apaga para a sua equipe.`, "Apagar ator", () => deleteSprite(curSid));
   $("#pDup").onclick = () => duplicateSprite(curSid);
 }
+// Mantém os campos do ator iguais ao que está no palco (a não ser que a pessoa esteja digitando neles)
+setInterval(() => {
+  const t = rt.targets.find(x => x.sid === curSid && !x.clone); if (!t) return;
+  const set = (id, v) => { const el = document.getElementById(id); if (el && document.activeElement !== el && el.value !== String(v)) el.value = v; };
+  set("pX", Math.round(t.x)); set("pY", Math.round(t.y)); set("pDir", Math.round(t.dir)); set("pSize", Math.round(t.size)); set("pSizeR", Math.min(300, Math.round(t.size)));
+  const dial = document.querySelector(".dir-dial i"); if (dial) dial.style.transform = `rotate(${Math.round(t.dir) + 180}deg)`;
+}, 250);
 function renderVarList() {
   const box = $("#varList");
   const items = [...live(project.meta.vars).map(([id, v]) => [STAGE, "vars", id, v.name, v.shown]), ...live(project.meta.lists).map(([id, v]) => [STAGE, "lists", id, v.name + " (lista)", v.shown])];

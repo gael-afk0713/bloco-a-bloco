@@ -358,4 +358,5 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", refreshT
 new MutationObserver(refreshTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 new ResizeObserver(() => Blockly.svgResize(ws)).observe($("#blocklyDiv"));
 let toolboxTimer = null;
-const refreshToolbox = () => { clearTimeout(toolboxTimer); toolboxTimer = setTimeout(() => ws.updateToolbox(buildToolbox()), 60); };
+// Atualiza a caixa de ferramentas e a categoria aberta (para uma variável nova aparecer na hora)
+const refreshToolbox = () => { clearTimeout(toolboxTimer); toolboxTimer = setTimeout(() => { ws.updateToolbox(buildToolbox()); try { ws.getToolbox()?.refreshSelection?.(); } catch (_) {} }, 60); };
