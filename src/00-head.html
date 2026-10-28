@@ -70,7 +70,7 @@ button { cursor: pointer; }
 .tabs button[aria-selected="true"] { background: var(--panel-2); border-color: var(--line); color: var(--ink); }
 .tabs .spacer { flex: 1; }
 .tabs .editing { font-size: .82rem; color: var(--muted); padding-bottom: 8px; display: inline-flex; gap: 4px; align-items: center; }
-#blocklyDiv { height: max(500px, calc(100vh - 140px)); width: 100%; }
+#blocklyDiv { height: max(480px, calc(100vh - 176px)); width: 100%; }
 .side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 
 /* Palco */
@@ -98,16 +98,54 @@ button { cursor: pointer; }
 .narr p { margin: 2px 0 0; }
 
 /* Modo jogador */
-body.player #editorCard, body.player .side > .card:not(:first-child), body.player .narr, body.player .readout { display: none; }
+body.player #editorCard, body.player .side > *:not(:first-child), body.player .narr, body.player .readout { display: none; }
 body.player .studio { grid-template-columns: minmax(0, 1fr); }
 body.player .side { max-width: min(960px, calc((100vh - 120px) * 4 / 3)); width: 100%; margin: 0 auto; }
 
-/* Atores */
-.sprite-pane { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 10px; }
-.sprite-props { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: .84rem; margin-bottom: 8px; }
-.sprite-props label { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); }
-.sprite-props input, .sprite-props select { width: 4.4em; border: 1px solid var(--line); background: var(--panel-2); border-radius: 6px; padding: 2px 5px; }
-.sprite-props input.name { width: 8em; } .sprite-props select { width: auto; }
+/* Seções do painel: ator selecionado | atores | palco */
+.section { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.sec-head { display: flex; align-items: center; gap: 10px; }
+.sec-head h2 { font-size: 1.05rem; line-height: 1.1; }
+.sec-head .label { display: block; }
+.sec-icon { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 14%, var(--panel)); color: var(--accent); font-weight: 700; flex: none; }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 12px; }
+.stage-sec .tile img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; }
+.stage-sec .btn { width: 100%; }
+/* Configurações do ator */
+.sprite-props { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px 10px; font-size: .84rem; }
+.prop { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.prop > span { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+.prop small { color: var(--muted); font-size: .74rem; }
+.prop input, .prop select { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--panel-2); border-radius: 6px; padding: 4px 6px; }
+.prop.wide { grid-column: span 2; }
+.prop .inline { display: flex; gap: 6px; align-items: center; }
+.prop .inline input[type=range] { flex: 1; padding: 0; }
+.prop .inline input[type=number] { width: 4.6em; flex: none; }
+.dir-dial { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); position: relative; flex: none; }
+.dir-dial i { position: absolute; left: 50%; top: 50%; width: 2px; height: 11px; background: var(--accent); transform-origin: 50% 0; border-radius: 2px; }
+.prop-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.toggles { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.toggles label { display: inline-flex; gap: 5px; align-items: center; color: var(--muted); }
+/* Ajuda dos blocos */
+.block-help { display: flex; gap: 8px; align-items: baseline; padding: 6px 12px; border-bottom: 1px solid var(--line); background: var(--panel-2); font-size: .88rem; min-height: 34px; }
+.block-help .label { flex: none; }
+.block-help b { font-family: var(--f-body); }
+.bab-tip .blocklyFlyoutLabelText { font-size: 15.5px !important; font-weight: 400 !important; fill: var(--ink) !important; opacity: .72; font-family: var(--f-body) !important; }
+/* Código em texto */
+#paneText { display: grid; grid-template-rows: auto 1fr; min-height: 500px; }
+.code-bar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--panel-2); padding: 6px 12px; font-weight: 700; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.code-bar .check { display: inline-flex; gap: 5px; align-items: center; font-size: .86rem; color: var(--muted); }
+.code-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 260px; min-height: 0; }
+pre.code { margin: 0; padding: 14px 16px; overflow: auto; font-family: var(--f-mono); font-size: .84rem; line-height: 1.65; max-height: calc(100vh - 190px); tab-size: 4; background: var(--panel); }
+pre.code .kw { color: #c157c4; font-weight: 600; } pre.code .st { color: #1f8a4c; } pre.code .nu { color: #d4691a; } pre.code .cm { color: var(--muted); font-style: italic; } pre.code .fn { color: var(--accent); }
+.code-guide { border-left: 1px solid var(--line); padding: 12px; font-size: .86rem; overflow: auto; max-height: calc(100vh - 190px); display: flex; flex-direction: column; gap: 10px; }
+.code-guide h3 { font-size: 1rem; }
+.code-guide dl { margin: 0; display: flex; flex-direction: column; gap: 0; }
+.code-guide dd { margin: 10px 0 2px; font-weight: 700; color: var(--ink); font-size: .84rem; order: 0; }
+.code-guide dt { font-family: var(--f-mono); font-size: .8rem; color: var(--accent); white-space: pre-wrap; background: var(--panel-2); border-radius: 6px; padding: 4px 8px; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
 .tile { position: relative; border: 2px solid var(--line); border-radius: 8px; background: var(--panel-2); padding: 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: .74rem; min-width: 0; }
 .tile img { width: 52px; height: 42px; object-fit: contain; }
@@ -178,6 +216,12 @@ textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2
 .blocklyTreeLabel { font-family: var(--f-body); font-size: .84rem; color: var(--ink); }
 .blocklyTreeRow { padding: 5px 4px !important; height: auto !important; line-height: 1.3 !important; }
 .peer-sel > .blocklyPath { stroke: var(--pc) !important; stroke-width: 4px !important; }
+#paneCode { position: relative; }
+.cursor-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 40; }
+.peer-cursor { position: absolute; left: 0; top: 0; transition: transform .08s linear; }
+.peer-cursor svg { display: block; filter: drop-shadow(0 1px 1px rgba(0,0,0,.35)); }
+.peer-cursor span, .peer-tag { position: absolute; left: 14px; top: 16px; white-space: nowrap; background: var(--pc); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+.peer-tag { left: 0; top: 0; transform: translateY(-110%); border-radius: 6px 6px 6px 0; }
 .bab-running > .blocklyPath { filter: drop-shadow(0 0 5px #f5c842) drop-shadow(0 0 2px #f5c842); }
 .blocklyText { font-family: var(--f-body) !important; }
 
@@ -188,7 +232,8 @@ textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2
   .assets { grid-template-columns: minmax(0, 1fr); }
   .asset-list { border-right: 0; border-bottom: 1px solid var(--line); flex-direction: row; flex-wrap: wrap; max-height: none; }
 }
-@media (max-width: 520px) { .sprite-pane { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1050px) { .code-wrap { grid-template-columns: minmax(0, 1fr); } .code-guide { border-left: 0; border-top: 1px solid var(--line); } }
+@media (max-width: 520px) { .pair { grid-template-columns: minmax(0, 1fr); } .prop.wide { grid-column: auto; } }
 @media (prefers-reduced-motion: reduce) { .bab-running > .blocklyPath { filter: none; } }
 </style>
 
@@ -210,10 +255,13 @@ textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2
       <button role="tab" data-tab="code" aria-selected="true">Código</button>
       <button role="tab" data-tab="costumes" aria-selected="false" id="tabCostumes">Fantasias</button>
       <button role="tab" data-tab="sounds" aria-selected="false">Sons</button>
+      <button role="tab" data-tab="text" aria-selected="false">Python / Portugol</button>
       <span class="spacer"></span>
+      <label class="editing"><input type="checkbox" id="tipsChk" checked> Descrições</label>
       <label class="editing"><input type="checkbox" id="simpleChk"> Modo iniciante</label>
     </div>
-    <div id="paneCode"><div id="blocklyDiv"></div></div>
+    <div id="paneCode"><div class="block-help" id="blockHelp" aria-live="polite"><span class="label">Sobre o bloco</span><span id="blockHelpText">Clique em qualquer bloco para ver o que ele faz e um exemplo.</span></div><div id="blocklyDiv"></div></div>
+    <div id="paneText" hidden></div>
     <div id="paneCostumes" class="assets" hidden></div>
     <div id="paneSounds" class="assets" hidden></div>
   </section>
@@ -245,21 +293,31 @@ textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2
       <div class="narr" aria-live="polite"><span class="label">O que está acontecendo</span><p id="narr">Clique em ▶ para começar. Clique num script para rodar só ele. Escolha “Devagar” para ver cada bloco funcionando.</p></div>
     </div>
 
-    <div class="card pad">
-      <div class="sprite-pane">
-        <div>
-          <div class="sprite-props" id="spriteProps"></div>
-          <div class="tiles" id="tiles"></div>
-          <div class="add-row">
-            <button class="btn small" id="addSpriteBtn">+ Ator da biblioteca</button>
-            <button class="btn small" id="paintSpriteBtn">✎ Pintar ator</button>
-            <button class="btn small" id="uploadSpriteBtn">⇪ Enviar imagem</button>
-          </div>
-          <div class="varlist" id="varList"></div>
+    <section class="card section" aria-labelledby="selTitle">
+      <header class="sec-head"><span class="sec-icon" aria-hidden="true">✦</span><div><span class="label">Selecionado</span><h2 id="selTitle">Ator</h2></div></header>
+      <div class="sprite-props" id="spriteProps"></div>
+    </section>
+
+    <div class="pair">
+      <section class="card section" aria-labelledby="actorsTitle">
+        <header class="sec-head"><span class="sec-icon" aria-hidden="true">☺</span><div><span class="label">Personagens e objetos</span><h2 id="actorsTitle">Atores</h2></div></header>
+        <div class="tiles" id="tiles"></div>
+        <div class="add-row">
+          <button class="btn small" id="addSpriteBtn">+ Da biblioteca</button>
+          <button class="btn small" id="paintSpriteBtn">✎ Pintar</button>
+          <button class="btn small" id="uploadSpriteBtn">⇪ Enviar imagem</button>
         </div>
+      </section>
+      <section class="card section stage-sec" aria-labelledby="stageTitle">
+        <header class="sec-head"><span class="sec-icon" aria-hidden="true">▭</span><div><span class="label">Fundo</span><h2 id="stageTitle">Palco</h2></div></header>
         <div class="stage-tile" id="stageTile"></div>
-      </div>
+      </section>
     </div>
+
+    <section class="card section" aria-labelledby="varsTitle" id="varSection" hidden>
+      <header class="sec-head"><span class="sec-icon" aria-hidden="true">#</span><div><span class="label">Aparece no palco</span><h2 id="varsTitle">Variáveis e listas</h2></div></header>
+      <div class="varlist" id="varList"></div>
+    </section>
 
     <div class="card">
       <div class="tabs help-tabs" role="tablist">

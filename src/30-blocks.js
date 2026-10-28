@@ -325,7 +325,9 @@ function buildToolbox() {
     }
     const blocks = Object.keys(DEF).filter(ok);
     if (!blocks.length && !items.length) continue;
-    contents.push({ kind: "category", name, categorystyle: cat + "_category", contents: [...items, ...blocks.map(t => toolboxBlock(t))] });
+    const tips = $("#tipsChk")?.checked !== false;
+    const withTips = blocks.flatMap(t => tips ? [toolboxBlock(t), { kind: "label", text: shortTip(DEF[t].tip), "web-class": "bab-tip" }] : [toolboxBlock(t)]);
+    contents.push({ kind: "category", name, categorystyle: cat + "_category", contents: [...items, ...withTips] });
   }
   return { kind: "categoryToolbox", contents };
 }
@@ -345,7 +347,7 @@ function makeTheme(dark) {
   });
 }
 const isDark = () => { const t = document.documentElement.getAttribute("data-theme"); return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
-try { $("#simpleChk").checked = localStorage.getItem("bab-simples") === "1"; } catch (_) {}
+try { $("#simpleChk").checked = localStorage.getItem("bab-simples") === "1"; $("#tipsChk").checked = localStorage.getItem("bab-dicas") !== "0"; } catch (_) {}
 const ws = Blockly.inject("blocklyDiv", {
   toolbox: buildToolbox(), renderer: "zelos", theme: makeTheme(isDark()), trashcan: false, sounds: false,
   zoom: { controls: false, wheel: true, startScale: .7, maxScale: 2, minScale: .3 },

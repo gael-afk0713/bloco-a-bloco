@@ -44,12 +44,21 @@ function loadWorkspace() {
   ws.updateToolbox(buildToolbox());
   refreshPeerHighlights();
 }
+// Clicar ou arrastar um bloco da paleta também mostra a explicação dele
+function hookFlyoutHelp() {
+  const fw = ws.getFlyout?.()?.getWorkspace?.() || ws.getToolbox?.()?.getFlyout?.()?.getWorkspace?.();
+  if (!fw || fw.__babHelp) return;
+  fw.__babHelp = true;
+  fw.addChangeListener(e => { const id = e.blockId || e.newElementId; if (id && (e.type === Blockly.Events.CLICK || e.type === Blockly.Events.SELECTED)) { const b = fw.getBlockById(id); showBlockHelp((b?.getRootBlock?.() || b)?.type); } });
+}
+hookFlyoutHelp(); setTimeout(hookFlyoutHelp, 500);
 let lastPointer = { x: 0, y: 0 };
 $("#blocklyDiv").addEventListener("pointerdown", e => { lastPointer = { x: e.clientX, y: e.clientY }; }, true);
 ws.addChangeListener(e => {
   if (applying) return;
-  if (e.type === Blockly.Events.SELECTED) { room?.presence({ sel: e.newElementId || null }).catch(() => {}); return; }
-  if (e.type === Blockly.Events.CLICK && e.targetType === "block" && e.blockId) { clickBlock(e.blockId); return; }
+  if (e.type === Blockly.Events.SELECTED) { room?.presence({ sel: e.newElementId || null }).catch(() => {}); if (e.newElementId) showBlockHelp(ws.getBlockById(e.newElementId)?.type); return; }
+  if (e.type === Blockly.Events.CLICK && e.targetType === "block" && e.blockId) { showBlockHelp(ws.getBlockById(e.blockId)?.type); clickBlock(e.blockId); return; }
+  if (e.type === Blockly.Events.BLOCK_CREATE && e.json?.type) showBlockHelp(e.json.type);
   if (e.isUiEvent) return;
   scheduleDiff();
 });

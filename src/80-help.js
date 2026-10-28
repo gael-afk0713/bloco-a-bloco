@@ -7,6 +7,7 @@ $("#stepBtn").onclick = () => { stepToken++; };
 $("#speedSel").onchange = () => { if ($("#speedSel").value === "normal") { ws.highlightBlock(null); $("#stepBtn").hidden = true; } };
 $("#turboChk").onchange = e => { rt.turbo = e.target.checked; };
 $("#simpleChk").onchange = () => { ws.updateToolbox(buildToolbox()); try { localStorage.setItem("bab-simples", $("#simpleChk").checked ? "1" : "0"); } catch (_) {} };
+$("#tipsChk").onchange = () => { ws.updateToolbox(buildToolbox()); try { localStorage.setItem("bab-dicas", $("#tipsChk").checked ? "1" : "0"); } catch (_) {} };
 $("#projTitle").addEventListener("change", e => updateMeta({ title: e.target.value.trim() || "Meu projeto" }));
 $("#playerBtn").onclick = () => { document.body.classList.toggle("player"); $("#playerBtn").classList.toggle("on", document.body.classList.contains("player")); lastMonHTML = ""; setTimeout(() => { Blockly.svgResize(ws); renderMonitors(); }, 50); };
 $("#fullBtn").onclick = () => { const el = $("#stageBox"); (el.requestFullscreen ? el.requestFullscreen() : Promise.reject()).catch(() => { document.body.classList.add("player"); $("#playerBtn").classList.add("on"); narrate("Tela cheia não está disponível aqui; abri o modo jogador."); }); };
@@ -155,6 +156,43 @@ async function renderPeople() {
   }
   $("#syncWrap").hidden = !(room && list.length > 1);
 }
+// Cursores com nome (como num documento compartilhado)
+const cursorLayer = document.createElement("div"); cursorLayer.className = "cursor-layer"; $("#paneCode").append(cursorLayer);
+const wsOrigin = () => { const o = ws.getOriginOffsetInPixels(); const r = $("#blocklyDiv").getBoundingClientRect(), p = $("#paneCode").getBoundingClientRect(); return { x: o.x + (r.left - p.left), y: o.y + (r.top - p.top) }; };
+let lastCurSent = 0;
+$("#blocklyDiv").addEventListener("pointermove", e => {
+  if (!room || now() - lastCurSent < 50) return; lastCurSent = now();
+  const o = wsOrigin(), p = $("#paneCode").getBoundingClientRect();
+  room.presence({ cur: { x: Math.round((e.clientX - p.left - o.x) / ws.scale), y: Math.round((e.clientY - p.top - o.y) / ws.scale) } }).catch(() => {});
+});
+$("#blocklyDiv").addEventListener("pointerleave", () => room?.presence({ cur: null }).catch(() => {}));
+const personName = p => p.isMe ? "Você" : (profiles[p.by || p.presence?.uid]?.name || "Colega");
+function renderCursors() {
+  if ($("#paneCode").hidden) return;
+  const o = wsOrigin(), s = ws.scale, seen = new Set();
+  for (const p of peers) {
+    if (p.isMe || p.kind !== "viewer" || p.presence?.sprite !== curSid) continue;
+    const col = p.presence?.color || "#0f7c8a";
+    if (p.presence?.cur) {
+      const id = "c-" + p.peer; seen.add(id);
+      let el = cursorLayer.querySelector(`[data-id="${id}"]`);
+      if (!el) { el = document.createElement("div"); el.className = "peer-cursor"; el.dataset.id = id; el.innerHTML = `<svg width="16" height="20" viewBox="0 0 16 20"><path d="M1 1 L1 16 L5 12 L8 19 L11 18 L8 11 L14 11 Z" fill="${esc(col)}" stroke="#fff" stroke-width="1.5"/></svg><span></span>`; cursorLayer.append(el); }
+      el.style.setProperty("--pc", col); el.querySelector("span").textContent = personName(p);
+      el.style.transform = `translate(${o.x + p.presence.cur.x * s}px, ${o.y + p.presence.cur.y * s}px)`;
+    }
+    const b = p.presence?.sel && ws.getBlockById(p.presence.sel);
+    if (b) {
+      const id = "t-" + p.peer; seen.add(id);
+      let el = cursorLayer.querySelector(`[data-id="${id}"]`);
+      if (!el) { el = document.createElement("div"); el.className = "peer-tag"; el.dataset.id = id; cursorLayer.append(el); }
+      const xy = b.getRelativeToSurfaceXY();
+      el.style.setProperty("--pc", col); el.textContent = personName(p) + " está editando";
+      el.style.left = (o.x + xy.x * s) + "px"; el.style.top = (o.y + xy.y * s) + "px";
+    }
+  }
+  cursorLayer.querySelectorAll("[data-id]").forEach(el => { if (!seen.has(el.dataset.id)) el.remove(); });
+}
+setInterval(renderCursors, 100);
 let highlighted = [];
 function refreshPeerHighlights() {
   highlighted.forEach(el => { el.classList.remove("peer-sel"); el.style.removeProperty("--pc"); }); highlighted = [];

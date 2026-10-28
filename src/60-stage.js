@@ -202,30 +202,41 @@ function renderTiles() {
   $("#starterBtn")?.addEventListener("click", () => loadProjectData(starterData(), true));
   const bd = live(project.meta.backdrops)[rt.backdrop]?.[1];
   const dots = peers.filter(p => !p.isMe && p.presence?.sprite === STAGE).map(p => `<i style="background:${esc(p.presence.color || "#888")}"></i>`).join("");
-  $("#stageTile").innerHTML = `<span class="label">Palco</span><button class="tile ${curSid === STAGE ? "sel" : ""}" data-sid="${STAGE}"><span class="dots">${dots}</span><img alt="" src="${esc(thumb(bd))}"><span>${live(project.meta.backdrops).length} cenário(s)</span></button>`;
+  const n = live(project.meta.backdrops).length;
+  $("#stageTile").innerHTML = `<button class="tile ${curSid === STAGE ? "sel" : ""}" data-sid="${STAGE}" title="Editar os scripts e cenários do palco"><span class="dots">${dots}</span><img alt="" src="${esc(thumb(bd))}"><span>${esc(bd?.name || "sem cenário")}</span></button>
+    <span class="muted" style="font-size:.78rem">${n} cenário${n === 1 ? "" : "s"}</span>
+    <button class="btn small" id="pickBackdrop">Trocar cenário</button>`;
+  $("#pickBackdrop").onclick = () => { selectSprite(STAGE); document.querySelector('[data-tab="costumes"]').click(); };
 }
 document.addEventListener("click", e => { const t = e.target.closest(".tile[data-sid]"); if (t) selectSprite(t.dataset.sid); });
 function renderProps() {
   const box = $("#spriteProps");
-  if (curSid === STAGE || !curDoc()) { box.innerHTML = `<span class="muted">Editando o Palco: scripts do palco, cenários e sons.</span>`; return; }
+  if (curSid === STAGE || !curDoc()) {
+    $("#selTitle").textContent = "Palco";
+    box.innerHTML = `<p class="muted" style="margin:0;grid-column:1/-1">O palco é o fundo do jogo. Ele tem scripts (por exemplo, trocar de cenário ou tocar música), cenários e sons, mas não se move. Use as abas <b>Código</b>, <b>Cenários</b> e <b>Sons</b> à esquerda.</p>`;
+    return;
+  }
   const d = curDoc(), t = rt.targets.find(x => x.sid === curSid && !x.clone);
-  box.innerHTML = `<label>Ator <input class="name" id="pName" value="${esc(d.name)}" maxlength="30"></label>
-    <label>x <input id="pX" type="number" value="${Math.round(t ? t.x : d.x)}"></label>
-    <label>y <input id="pY" type="number" value="${Math.round(t ? t.y : d.y)}"></label>
-    <label>tamanho <input id="pSize" type="number" value="${Math.round(t ? t.size : d.size)}"></label>
-    <label>direção <input id="pDir" type="number" value="${Math.round(t ? t.dir : d.dir)}"></label>
-    <label>rotação <select id="pRot">${STATIC.rot.map(([n, v]) => `<option value="${v}" ${(d.rot || "all") === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
-    <label><input type="checkbox" id="pVis" ${d.visible !== false ? "checked" : ""}> visível</label>
-    <label><input type="checkbox" id="pDrag" ${d.draggable ? "checked" : ""}> arrastável no jogo</label>
-    <button class="btn small" id="pDup">Duplicar</button>
-    <button class="btn small danger" id="pDel">Apagar</button>`;
-  const upd = (k, f) => $("#" + k).addEventListener("change", e => {
+  const dir = Math.round(t ? t.dir : d.dir ?? 90), size = Math.round(t ? t.size : d.size ?? 100);
+  $("#selTitle").textContent = d.name;
+  box.innerHTML = `<label class="prop wide"><span>Nome</span><input id="pName" value="${esc(d.name)}" maxlength="30"></label>
+    <label class="prop"><span>Posição x</span><input id="pX" type="number" value="${Math.round(t ? t.x : d.x)}"><small>← −240 · 240 →</small></label>
+    <label class="prop"><span>Posição y</span><input id="pY" type="number" value="${Math.round(t ? t.y : d.y)}"><small>↓ −180 · 180 ↑</small></label>
+    <label class="prop wide"><span>Tamanho (%)</span><span class="inline"><input type="range" id="pSizeR" min="5" max="300" value="${Math.min(300, size)}" aria-label="Tamanho"><input id="pSize" type="number" value="${size}" aria-label="Tamanho em porcentagem"></span></label>
+    <label class="prop"><span>Direção</span><span class="inline"><span class="dir-dial" aria-hidden="true"><i style="transform:rotate(${dir + 180}deg)"></i></span><input id="pDir" type="number" value="${dir}" aria-label="Direção em graus"></span><small>90 = direita</small></label>
+    <label class="prop"><span>Ao girar</span><select id="pRot">${STATIC.rot.map(([n, v]) => `<option value="${v}" ${(d.rot || "all") === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+    <div class="toggles"><label><input type="checkbox" id="pVis" ${d.visible !== false ? "checked" : ""}> Aparece no palco</label><label><input type="checkbox" id="pDrag" ${d.draggable ? "checked" : ""}> Quem joga pode arrastar</label></div>
+    <div class="prop-actions"><button class="btn small" id="pDup">Duplicar ator</button><button class="btn small danger" id="pDel">Apagar ator</button><span class="muted" style="font-size:.78rem">Dica: arraste o ator no palco para mudar a posição.</span></div>`;
+  const upd = (k, f, ev = "change") => $("#" + k).addEventListener(ev, e => {
     const val = f(e.target); updateSprite(curSid, val);
     const tt = rt.targets.find(x => x.sid === curSid && !x.clone);
     if (tt) { if ("x" in val) tt.x = val.x; if ("y" in val) tt.y = val.y; if ("size" in val) tt.size = clampSize(tt, val.size); if ("dir" in val) turn(tt, val.dir); if ("visible" in val) tt.visible = val.visible; if ("rot" in val) tt.rot = val.rot; if ("draggable" in val) tt.draggable = val.draggable; }
+    if ("size" in val) { $("#pSize").value = val.size; $("#pSizeR").value = Math.min(300, val.size); }
+    if ("dir" in val) document.querySelector(".dir-dial i").style.transform = `rotate(${val.dir + 180}deg)`;
     renderTiles(); rt.redraw = true;
   });
   upd("pX", el => ({ x: num(el.value) })); upd("pY", el => ({ y: num(el.value) })); upd("pSize", el => ({ size: num(el.value) })); upd("pDir", el => ({ dir: num(el.value) }));
+  upd("pSizeR", el => ({ size: num(el.value) }), "input");
   upd("pVis", el => ({ visible: el.checked })); upd("pRot", el => ({ rot: el.value })); upd("pDrag", el => ({ draggable: el.checked }));
   $("#pName").addEventListener("change", e => renameSprite(curSid, e.target.value));
   $("#pDel").onclick = () => confirmBox(`Apagar o ator “${d.name}” e todos os scripts dele? Isso também apaga para a sua equipe.`, "Apagar ator", () => deleteSprite(curSid));
@@ -235,7 +246,8 @@ function renderVarList() {
   const box = $("#varList");
   const items = [...live(project.meta.vars).map(([id, v]) => [STAGE, "vars", id, v.name, v.shown]), ...live(project.meta.lists).map(([id, v]) => [STAGE, "lists", id, v.name + " (lista)", v.shown])];
   if (curDoc()) items.push(...live(curDoc().vars).map(([id, v]) => [curSid, "vars", id, v.name + " (deste ator)", v.shown]), ...live(curDoc().lists).map(([id, v]) => [curSid, "lists", id, v.name + " (lista deste ator)", v.shown]));
-  box.innerHTML = items.length ? `<span class="label" style="width:100%">Mostrar no palco</span>` + items.map(([w, k, id, n, sh]) => `<label><input type="checkbox" data-w="${esc(w)}" data-k="${k}" data-id="${esc(id)}" ${sh ? "checked" : ""}> ${esc(n)}</label>`).join("") : "";
+  $("#varSection").hidden = !items.length;
+  box.innerHTML = items.length ? `<span class="muted" style="width:100%;font-size:.8rem">Marque para mostrar o valor no palco. Arraste o mostrador para mudar o lugar; clique duas vezes para aumentar.</span>` + items.map(([w, k, id, n, sh]) => `<label><input type="checkbox" data-w="${esc(w)}" data-k="${k}" data-id="${esc(id)}" ${sh ? "checked" : ""}> ${esc(n)}</label>`).join("") : "";
   box.querySelectorAll("input").forEach(i => i.onchange = () => { const patch = { [i.dataset.k]: { [i.dataset.id]: { shown: i.checked } } }; i.dataset.w === STAGE ? updateMeta(patch) : updateSprite(i.dataset.w, patch); lastMonHTML = ""; renderMonitors(); });
 }
 function renameSprite(sid, name) {
@@ -281,10 +293,10 @@ let curTab = "code";
 document.querySelectorAll("#editorCard .tabs [data-tab]").forEach(b => b.addEventListener("click", () => {
   curTab = b.dataset.tab;
   document.querySelectorAll("#editorCard .tabs [data-tab]").forEach(x => x.setAttribute("aria-selected", x === b));
-  $("#paneCode").hidden = curTab !== "code"; $("#paneCostumes").hidden = curTab !== "costumes"; $("#paneSounds").hidden = curTab !== "sounds";
-  if (curTab === "code") setTimeout(() => Blockly.svgResize(ws), 0); else renderAssets();
+  $("#paneCode").hidden = curTab !== "code"; $("#paneCostumes").hidden = curTab !== "costumes"; $("#paneSounds").hidden = curTab !== "sounds"; $("#paneText").hidden = curTab !== "text";
+  if (curTab === "code") setTimeout(() => Blockly.svgResize(ws), 0); else { if (curTab === "text") diffWorkspace(); renderAssets(); }
 }));
-function renderAssets() { if (curTab === "costumes") renderCostumes(); else if (curTab === "sounds") renderSounds(); }
+function renderAssets() { if (curTab === "costumes") renderCostumes(); else if (curTab === "sounds") renderSounds(); else if (curTab === "text") renderTextCode(); }
 function renderCostumes() {
   const pane = $("#paneCostumes"), stage = curSid === STAGE, list = costumesOf(curSid);
   const t = stage ? null : rt.targets.find(x => x.sid === curSid && !x.clone);
