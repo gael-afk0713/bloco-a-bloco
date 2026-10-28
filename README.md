@@ -11,6 +11,7 @@ Um estúdio de jogos e animações por blocos, em português, inspirado no Scrat
 - **Atores e cenários:** biblioteca própria, editor de pintura (pincel, formas, balde, texto) e envio de imagens. Sons: efeitos sintetizados, gravar pelo microfone ou enviar mp3/wav.
 - **Importar projetos do Scratch (.sb3):** blocos, fantasias, sons, variáveis, listas, mensagens e blocos personalizados.
 - **Salvar e abrir** projetos no computador (.json).
+- **Exportar para o Scratch (.sb3):** blocos, fantasias, cenários, sons (os efeitos sintetizados viram arquivos WAV), variáveis, listas, mensagens, mostradores e Meus Blocos. Os poucos blocos extras que o Scratch não tem são adaptados ou listados no aviso. Testado no motor oficial do Scratch (scratch-vm).
 - **Python e Portugol:** a aba “Python / Portugol” mostra os seus blocos escritos como código de verdade, com a opção de explicar cada linha e um guia que liga cada bloco ao código.
 - **Descrições:** cada bloco da paleta mostra embaixo o que ele faz; ao clicar num bloco aparece uma explicação com exemplo.
 - **Aprender:** modo iniciante, explicação em português de cada bloco enquanto roda (modos “Devagar” e “Passo a passo”), clicar num script para rodar só ele, clicar num bloco de valor para ver o resultado e 10 lições com conferência automática.
@@ -37,6 +38,7 @@ O programa é uma página só, montada a partir de `src/`:
 | `src/50-runtime.js`, `src/55-exec.js` | Motor de execução (30 quadros/s, threads cooperativas), colisão e efeitos |
 | `src/60-stage.js` | Palco, mostradores, atores, fantasias e sons |
 | `src/70-files.js` | Janelas, pintura, salvar/abrir e importação de .sb3 |
+| `src/75-export.js` | Exportação para o Scratch (.sb3) |
 | `src/80-help.js` | Lições, tutor, conversa, console, cursores da equipe e inicialização |
 | `src/85-code.js` | Conversão dos blocos para Python e Portugol |
 
