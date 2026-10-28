@@ -70,7 +70,7 @@ button { cursor: pointer; }
 .tabs button[aria-selected="true"] { background: var(--panel-2); border-color: var(--line); color: var(--ink); }
 .tabs .spacer { flex: 1; }
 .tabs .editing { font-size: .82rem; color: var(--muted); padding-bottom: 8px; display: inline-flex; gap: 4px; align-items: center; }
-#blocklyDiv { height: max(500px, calc(100vh - 140px)); width: 100%; }
+#blocklyDiv { height: max(480px, calc(100vh - 176px)); width: 100%; }
 .side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 
 /* Palco */
@@ -98,16 +98,54 @@ button { cursor: pointer; }
 .narr p { margin: 2px 0 0; }
 
 /* Modo jogador */
-body.player #editorCard, body.player .side > .card:not(:first-child), body.player .narr, body.player .readout { display: none; }
+body.player #editorCard, body.player .side > *:not(:first-child), body.player .narr, body.player .readout { display: none; }
 body.player .studio { grid-template-columns: minmax(0, 1fr); }
 body.player .side { max-width: min(960px, calc((100vh - 120px) * 4 / 3)); width: 100%; margin: 0 auto; }
 
-/* Atores */
-.sprite-pane { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 10px; }
-.sprite-props { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: .84rem; margin-bottom: 8px; }
-.sprite-props label { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); }
-.sprite-props input, .sprite-props select { width: 4.4em; border: 1px solid var(--line); background: var(--panel-2); border-radius: 6px; padding: 2px 5px; }
-.sprite-props input.name { width: 8em; } .sprite-props select { width: auto; }
+/* Seções do painel: ator selecionado | atores | palco */
+.section { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.sec-head { display: flex; align-items: center; gap: 10px; }
+.sec-head h2 { font-size: 1.05rem; line-height: 1.1; }
+.sec-head .label { display: block; }
+.sec-icon { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 14%, var(--panel)); color: var(--accent); font-weight: 700; flex: none; }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 12px; }
+.stage-sec .tile img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; }
+.stage-sec .btn { width: 100%; }
+/* Configurações do ator */
+.sprite-props { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px 10px; font-size: .84rem; }
+.prop { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.prop > span { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+.prop small { color: var(--muted); font-size: .74rem; }
+.prop input, .prop select { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--panel-2); border-radius: 6px; padding: 4px 6px; }
+.prop.wide { grid-column: span 2; }
+.prop .inline { display: flex; gap: 6px; align-items: center; }
+.prop .inline input[type=range] { flex: 1; padding: 0; }
+.prop .inline input[type=number] { width: 4.6em; flex: none; }
+.dir-dial { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); position: relative; flex: none; }
+.dir-dial i { position: absolute; left: 50%; top: 50%; width: 2px; height: 11px; background: var(--accent); transform-origin: 50% 0; border-radius: 2px; }
+.prop-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.toggles { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.toggles label { display: inline-flex; gap: 5px; align-items: center; color: var(--muted); }
+/* Ajuda dos blocos */
+.block-help { display: flex; gap: 8px; align-items: baseline; padding: 6px 12px; border-bottom: 1px solid var(--line); background: var(--panel-2); font-size: .88rem; min-height: 34px; }
+.block-help .label { flex: none; }
+.block-help b { font-family: var(--f-body); }
+.bab-tip .blocklyFlyoutLabelText { font-size: 15.5px !important; font-weight: 400 !important; fill: var(--ink) !important; opacity: .72; font-family: var(--f-body) !important; }
+/* Código em texto */
+#paneText { display: grid; grid-template-rows: auto 1fr; min-height: 500px; }
+.code-bar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--panel-2); padding: 6px 12px; font-weight: 700; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.code-bar .check { display: inline-flex; gap: 5px; align-items: center; font-size: .86rem; color: var(--muted); }
+.code-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 260px; min-height: 0; }
+pre.code { margin: 0; padding: 14px 16px; overflow: auto; font-family: var(--f-mono); font-size: .84rem; line-height: 1.65; max-height: calc(100vh - 190px); tab-size: 4; background: var(--panel); }
+pre.code .kw { color: #c157c4; font-weight: 600; } pre.code .st { color: #1f8a4c; } pre.code .nu { color: #d4691a; } pre.code .cm { color: var(--muted); font-style: italic; } pre.code .fn { color: var(--accent); }
+.code-guide { border-left: 1px solid var(--line); padding: 12px; font-size: .86rem; overflow: auto; max-height: calc(100vh - 190px); display: flex; flex-direction: column; gap: 10px; }
+.code-guide h3 { font-size: 1rem; }
+.code-guide dl { margin: 0; display: flex; flex-direction: column; gap: 0; }
+.code-guide dd { margin: 10px 0 2px; font-weight: 700; color: var(--ink); font-size: .84rem; order: 0; }
+.code-guide dt { font-family: var(--f-mono); font-size: .8rem; color: var(--accent); white-space: pre-wrap; background: var(--panel-2); border-radius: 6px; padding: 4px 8px; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
 .tile { position: relative; border: 2px solid var(--line); border-radius: 8px; background: var(--panel-2); padding: 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: .74rem; min-width: 0; }
 .tile img { width: 52px; height: 42px; object-fit: contain; }
@@ -178,6 +216,12 @@ textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2
 .blocklyTreeLabel { font-family: var(--f-body); font-size: .84rem; color: var(--ink); }
 .blocklyTreeRow { padding: 5px 4px !important; height: auto !important; line-height: 1.3 !important; }
 .peer-sel > .blocklyPath { stroke: var(--pc) !important; stroke-width: 4px !important; }
+#paneCode { position: relative; }
+.cursor-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 40; }
+.peer-cursor { position: absolute; left: 0; top: 0; transition: transform .08s linear; }
+.peer-cursor svg { display: block; filter: drop-shadow(0 1px 1px rgba(0,0,0,.35)); }
+.peer-cursor span, .peer-tag { position: absolute; left: 14px; top: 16px; white-space: nowrap; background: var(--pc); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+.peer-tag { left: 0; top: 0; transform: translateY(-110%); border-radius: 6px 6px 6px 0; }
 .bab-running > .blocklyPath { filter: drop-shadow(0 0 5px #f5c842) drop-shadow(0 0 2px #f5c842); }
 .blocklyText { font-family: var(--f-body) !important; }
 
@@ -188,7 +232,8 @@ textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2
   .assets { grid-template-columns: minmax(0, 1fr); }
   .asset-list { border-right: 0; border-bottom: 1px solid var(--line); flex-direction: row; flex-wrap: wrap; max-height: none; }
 }
-@media (max-width: 520px) { .sprite-pane { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1050px) { .code-wrap { grid-template-columns: minmax(0, 1fr); } .code-guide { border-left: 0; border-top: 1px solid var(--line); } }
+@media (max-width: 520px) { .pair { grid-template-columns: minmax(0, 1fr); } .prop.wide { grid-column: auto; } }
 @media (prefers-reduced-motion: reduce) { .bab-running > .blocklyPath { filter: none; } }
 </style>
 
@@ -210,10 +255,13 @@ textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2
       <button role="tab" data-tab="code" aria-selected="true">Código</button>
       <button role="tab" data-tab="costumes" aria-selected="false" id="tabCostumes">Fantasias</button>
       <button role="tab" data-tab="sounds" aria-selected="false">Sons</button>
+      <button role="tab" data-tab="text" aria-selected="false">Python / Portugol</button>
       <span class="spacer"></span>
+      <label class="editing"><input type="checkbox" id="tipsChk" checked> Descrições</label>
       <label class="editing"><input type="checkbox" id="simpleChk"> Modo iniciante</label>
     </div>
-    <div id="paneCode"><div id="blocklyDiv"></div></div>
+    <div id="paneCode"><div class="block-help" id="blockHelp" aria-live="polite"><span class="label">Sobre o bloco</span><span id="blockHelpText">Clique em qualquer bloco para ver o que ele faz e um exemplo.</span></div><div id="blocklyDiv"></div></div>
+    <div id="paneText" hidden></div>
     <div id="paneCostumes" class="assets" hidden></div>
     <div id="paneSounds" class="assets" hidden></div>
   </section>
@@ -245,21 +293,31 @@ textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2
       <div class="narr" aria-live="polite"><span class="label">O que está acontecendo</span><p id="narr">Clique em ▶ para começar. Clique num script para rodar só ele. Escolha “Devagar” para ver cada bloco funcionando.</p></div>
     </div>
 
-    <div class="card pad">
-      <div class="sprite-pane">
-        <div>
-          <div class="sprite-props" id="spriteProps"></div>
-          <div class="tiles" id="tiles"></div>
-          <div class="add-row">
-            <button class="btn small" id="addSpriteBtn">+ Ator da biblioteca</button>
-            <button class="btn small" id="paintSpriteBtn">✎ Pintar ator</button>
-            <button class="btn small" id="uploadSpriteBtn">⇪ Enviar imagem</button>
-          </div>
-          <div class="varlist" id="varList"></div>
+    <section class="card section" aria-labelledby="selTitle">
+      <header class="sec-head"><span class="sec-icon" aria-hidden="true">✦</span><div><span class="label">Selecionado</span><h2 id="selTitle">Ator</h2></div></header>
+      <div class="sprite-props" id="spriteProps"></div>
+    </section>
+
+    <div class="pair">
+      <section class="card section" aria-labelledby="actorsTitle">
+        <header class="sec-head"><span class="sec-icon" aria-hidden="true">☺</span><div><span class="label">Personagens e objetos</span><h2 id="actorsTitle">Atores</h2></div></header>
+        <div class="tiles" id="tiles"></div>
+        <div class="add-row">
+          <button class="btn small" id="addSpriteBtn">+ Da biblioteca</button>
+          <button class="btn small" id="paintSpriteBtn">✎ Pintar</button>
+          <button class="btn small" id="uploadSpriteBtn">⇪ Enviar imagem</button>
         </div>
+      </section>
+      <section class="card section stage-sec" aria-labelledby="stageTitle">
+        <header class="sec-head"><span class="sec-icon" aria-hidden="true">▭</span><div><span class="label">Fundo</span><h2 id="stageTitle">Palco</h2></div></header>
         <div class="stage-tile" id="stageTile"></div>
-      </div>
+      </section>
     </div>
+
+    <section class="card section" aria-labelledby="varsTitle" id="varSection" hidden>
+      <header class="sec-head"><span class="sec-icon" aria-hidden="true">#</span><div><span class="label">Aparece no palco</span><h2 id="varsTitle">Variáveis e listas</h2></div></header>
+      <div class="varlist" id="varList"></div>
+    </section>
 
     <div class="card">
       <div class="tabs help-tabs" role="tablist">
@@ -965,7 +1023,9 @@ function buildToolbox() {
     }
     const blocks = Object.keys(DEF).filter(ok);
     if (!blocks.length && !items.length) continue;
-    contents.push({ kind: "category", name, categorystyle: cat + "_category", contents: [...items, ...blocks.map(t => toolboxBlock(t))] });
+    const tips = $("#tipsChk")?.checked !== false;
+    const withTips = blocks.flatMap(t => tips ? [toolboxBlock(t), { kind: "label", text: shortTip(DEF[t].tip), "web-class": "bab-tip" }] : [toolboxBlock(t)]);
+    contents.push({ kind: "category", name, categorystyle: cat + "_category", contents: [...items, ...withTips] });
   }
   return { kind: "categoryToolbox", contents };
 }
@@ -985,7 +1045,7 @@ function makeTheme(dark) {
   });
 }
 const isDark = () => { const t = document.documentElement.getAttribute("data-theme"); return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
-try { $("#simpleChk").checked = localStorage.getItem("bab-simples") === "1"; } catch (_) {}
+try { $("#simpleChk").checked = localStorage.getItem("bab-simples") === "1"; $("#tipsChk").checked = localStorage.getItem("bab-dicas") !== "0"; } catch (_) {}
 const ws = Blockly.inject("blocklyDiv", {
   toolbox: buildToolbox(), renderer: "zelos", theme: makeTheme(isDark()), trashcan: false, sounds: false,
   zoom: { controls: false, wheel: true, startScale: .7, maxScale: 2, minScale: .3 },
@@ -997,6 +1057,170 @@ new MutationObserver(refreshTheme).observe(document.documentElement, { attribute
 new ResizeObserver(() => Blockly.svgResize(ws)).observe($("#blocklyDiv"));
 let toolboxTimer = null;
 const refreshToolbox = () => { clearTimeout(toolboxTimer); toolboxTimer = setTimeout(() => ws.updateToolbox(buildToolbox()), 60); };
+
+// =====================================================================
+// Exemplos fáceis de cada bloco (aparecem em “Sobre o bloco”)
+// =====================================================================
+const EXAMPLES = {
+  mv_move: "Use 10 para dar um passinho. Dentro de um “sempre”, o ator anda sem parar.",
+  mv_turnr: "15 graus é uma viradinha. 90 é um quarto de volta. 360 é uma volta inteira.",
+  mv_turnl: "Igual ao outro girar, mas para o lado contrário.",
+  mv_goto: "“posição aleatória” é ótimo para fazer uma moeda reaparecer em outro lugar.",
+  mv_gotoxy: "x: 0 y: 0 é o meio do palco. x: -200 fica à esquerda; y: 150 fica lá em cima.",
+  mv_glideto: "Faz o ator flutuar até o mouse ou até outro ator.",
+  mv_glide: "Bom para animações: “deslizar por 2 seg. até x: 200 y: 0” atravessa o palco devagar.",
+  mv_pointdir: "Antes de “mover”, escolha para onde olhar. 0 é para cima.",
+  mv_pointto: "Coloque num “sempre” para o ator seguir o mouse com o olhar.",
+  mv_changex: "Com as setas: seta direita → mudar x por 10; seta esquerda → mudar x por -10.",
+  mv_setx: "Use para voltar o ator para um lugar fixo, como a borda esquerda (-220).",
+  mv_changey: "Mudar y por 10 sobe; por -10 desce. Bom para pular.",
+  mv_sety: "Ex.: “definir y como -150” coloca o ator no chão.",
+  mv_bounce: "Coloque depois de “mover” dentro de um “sempre”: o ator fica batendo e voltando.",
+  mv_rotstyle: "Escolha “esquerda-direita” para o personagem não ficar de cabeça para baixo.",
+  mv_x: "Encaixe em “dizer” para ver a posição, ou use em “se posição x > 200 então”.",
+  mv_y: "Ex.: “se posição y < -170 então” (caiu do palco).",
+  mv_dir: "Diz a direção atual em graus.",
+  lk_sayfor: "Ex.: “dizer Olá! por 2 segundos”. O script espera a fala acabar.",
+  lk_say: "A fala fica na tela. Para apagar, use “dizer” com o texto vazio.",
+  lk_thinkfor: "Mostra uma nuvem de pensamento por um tempo.",
+  lk_think: "Mostra uma nuvem de pensamento que fica até mudar.",
+  lk_costume: "Use para mostrar o personagem triste, feliz, pulando…",
+  lk_nextcostume: "“sempre: próxima fantasia, esperar 0.2” faz o personagem andar.",
+  lk_backdrop: "Troque de fase: “mudar para o cenário Espaço”.",
+  lk_backdropwait: "Troca o cenário e só continua quando os scripts da troca terminarem.",
+  lk_nextbackdrop: "Bom para histórias: cada clique avança para a próxima cena.",
+  lk_changesize: "Use 10 para crescer um pouco e -10 para encolher.",
+  lk_setsize: "50% é metade do tamanho; 200% é o dobro.",
+  lk_changeeffect: "“mudar efeito cor por 25” dentro de um “sempre” faz o ator mudar de cor como arco-íris.",
+  lk_seteffect: "“definir efeito fantasma como 50” deixa o ator meio transparente.",
+  lk_cleareffects: "Desfaz todos os efeitos de uma vez.",
+  lk_show: "Use no começo do jogo para o ator aparecer.",
+  lk_hide: "Use quando o inimigo for derrotado ou a moeda for pega.",
+  lk_layer: "“da frente” coloca o ator na frente de todos os outros.",
+  lk_layers: "Ajusta quem fica na frente de quem, de pouquinho em pouquinho.",
+  lk_costumenum: "Diz qual fantasia está sendo usada (número ou nome).",
+  lk_backdropnum: "Diz qual cenário está no palco.",
+  lk_size: "Diz o tamanho atual em porcentagem.",
+  snd_playwait: "O script espera o som terminar antes de continuar.",
+  snd_play: "O som toca e o script continua na hora. Bom para efeitos como pulo e moeda.",
+  snd_stop: "Silencia todos os sons e falas.",
+  snd_changeeffect: "Tom 10 = meio tom mais agudo. Esquerda/direita -100 = só no fone esquerdo.",
+  snd_seteffect: "Ex.: tom 120 deixa a voz fina como de esquilo.",
+  snd_cleareffects: "Volta o som ao normal.",
+  snd_changevol: "-10 abaixa um pouco o volume.",
+  snd_setvol: "100% é o volume máximo deste ator.",
+  snd_vol: "Diz o volume atual.",
+  ev_flag: "Quase todo jogo começa aqui. Monte os blocos embaixo dele.",
+  ev_key: "Ex.: “quando a tecla espaço for pressionada → mudar y por 50” (pulo).",
+  ev_keyup: "Ex.: parar a animação quando a pessoa soltar a seta.",
+  ev_click: "Ótimo para botões: “quando este ator for clicado → transmitir começar”.",
+  ev_stageclick: "Roda quando alguém clica numa parte vazia do palco.",
+  ev_backdrop: "Ex.: quando o cenário mudar para Espaço, toque uma música diferente.",
+  ev_gt: "Ex.: “quando cronômetro > 60” → fim de jogo após 1 minuto.",
+  ev_receive: "Ex.: “quando eu receber fim de jogo → dizer Você perdeu!”.",
+  ev_broadcast: "Avisa todo mundo. Crie mensagens como “começar”, “perdeu” ou “próxima fase”.",
+  ev_broadcastwait: "Avisa e espera todos que receberam terminarem.",
+  ct_wait: "Coloque entre dois blocos para dar tempo de ver o que acontece.",
+  ct_repeat: "“repetir 4 vezes: mover 100, girar 90” desenha um quadrado.",
+  ct_forever: "Quase todo jogo tem um: ele fica conferindo tudo o tempo todo.",
+  ct_if: "Ex.: “se tocando em Moeda? então adicionar 1 a pontos”.",
+  ct_ifelse: "Ex.: “se resposta = 4 então dizer Certo! senão dizer Tente de novo”.",
+  ct_waituntil: "Ex.: “esperar até que tecla espaço pressionada?” para começar o jogo.",
+  ct_repeatuntil: "Ex.: “repetir até que tocando em borda?: mover 5”.",
+  ct_while: "É o contrário do “repetir até que”: repete enquanto a condição for verdade.",
+  ct_foreach: "Ex.: “para cada i de 1 até 10: dizer i” conta até 10.",
+  ct_stop: "“parar tudo” encerra o jogo (como o botão ■).",
+  ct_startclone: "Cada cópia roda este script. Ex.: cada gota de chuva cai sozinha.",
+  ct_clone: "Ex.: “sempre: criar clone de eu mesmo, esperar 1” cria um inimigo por segundo.",
+  ct_deleteclone: "Use quando o clone sair do palco, para o jogo não ficar lento.",
+  sn_touching: "O mais usado em jogos: “se tocando em Inimigo? então…”.",
+  sn_touchcolor: "Ex.: labirinto com paredes pretas: “se tocando na cor preta? então volte”.",
+  sn_colortouch: "Ex.: só o pé (verde) do ator conta quando toca o chão (marrom).",
+  sn_distance: "Ex.: “se distância até Gato < 50 então fugir”.",
+  sn_ask: "Ex.: “perguntar Qual é o seu nome? e esperar”, depois “dizer juntar Olá com resposta”.",
+  sn_answer: "Guarda o que a pessoa escreveu na última pergunta.",
+  sn_keypressed: "Melhor que “quando a tecla…” para movimento suave dentro de um “sempre”.",
+  sn_mousedown: "Ex.: “se mouse pressionado? então carimbar” (desenhar com o mouse).",
+  sn_mousex: "Ex.: “definir x como mouse x” faz a raquete seguir o mouse.",
+  sn_mousey: "Posição vertical do ponteiro.",
+  sn_drag: "Deixa o jogador arrastar o ator, como peças de quebra-cabeça.",
+  sn_loudness: "Ex.: “se volume do som > 30 então pular” (grite para pular!).",
+  sn_timer: "Ex.: mostre o tempo de jogo ou acabe o jogo depois de 60 segundos.",
+  sn_resettimer: "Use no começo do jogo para contar do zero.",
+  sn_of: "Ex.: “posição x de Bola” para a raquete seguir a bola.",
+  sn_current: "Ex.: um relógio: “dizer juntar hora atual com minuto atual”.",
+  sn_days: "Número de dias desde 1º de janeiro de 2000.",
+  sn_username: "O nome de quem está usando, quando disponível.",
+  op_add: "Ex.: “pontos + 10”.", op_sub: "Ex.: “vidas - 1”.", op_mul: "Ex.: “velocidade * 2”.", op_div: "Ex.: “pontos / 2”.",
+  op_pow: "Ex.: 2 ^ 3 = 8.",
+  op_random: "Ex.: “ir para x: número aleatório entre -200 e 200”.",
+  op_gt: "Ex.: “se pontos > 10 então mudar para o cenário Vitória”.",
+  op_lt: "Ex.: “se vidas < 1 então transmitir fim de jogo”.",
+  op_eq: "Ex.: “se resposta = 7 então dizer Acertou!”.",
+  op_and: "Ex.: “tecla espaço pressionada? e no chão?” (só pula se estiver no chão).",
+  op_or: "Ex.: “tocando em borda? ou tocando em Inimigo?”.",
+  op_not: "Ex.: “esperar até que não tocando em Parede?”.",
+  op_join: "Ex.: “juntar Pontos: com pontos” mostra “Pontos: 5”.",
+  op_letter: "Ex.: “letra 1 de banana” dá “b”.",
+  op_length: "Ex.: “tamanho de banana” dá 6.",
+  op_contains: "Ex.: “resposta contém sim?”.",
+  op_mod: "Ex.: “resto de 7 por 2” dá 1 (ímpar). Se der 0, é par.",
+  op_round: "Ex.: “arredondar 3.7” dá 4.",
+  op_math: "Ex.: “raiz quadrada de 16” dá 4.",
+  op_max: "Ex.: “maior entre pontos e recorde”.", op_min: "Ex.: “menor entre 5 e 3” dá 3.",
+  var_get: "Encaixe em “dizer” ou em contas para usar o valor guardado.",
+  var_set: "Ex.: no começo do jogo, “definir pontos como 0”.",
+  var_change: "Ex.: “adicionar 1 a pontos” quando pegar uma moeda. Use -1 para tirar.",
+  var_show: "Mostra a caixinha com o valor no palco.", var_hide: "Esconde a caixinha do palco.",
+  list_get: "Mostra todos os itens juntos.", list_add: "Ex.: guardar os nomes dos jogadores.",
+  list_delete: "Apaga um item pela posição.", list_clear: "Esvazia a lista inteira.",
+  list_insert: "Coloca um item no meio da lista.", list_replace: "Troca o item de uma posição.",
+  list_item: "Ex.: “item número aleatório entre 1 e 3 de perguntas” sorteia uma pergunta.",
+  list_indexof: "Diz em que posição o item está.", list_length: "Quantos itens a lista tem.",
+  list_contains: "Ex.: “se convidados contém resposta? então”.",
+  list_show: "Mostra a lista no palco.", list_hide: "Esconde a lista do palco.",
+  proc_arg: "Use dentro do “definir” do seu bloco para ler o que chegou na entrada.",
+  proc_argb: "Use dentro do “definir” do seu bloco, em um “se”.",
+  pen_clear: "Use no começo para limpar os desenhos antigos.",
+  pen_stamp: "Ex.: “repetir 10: carimbar, mover 40” desenha uma fila de cópias.",
+  pen_down: "Depois de abaixar, todo movimento vira desenho.",
+  pen_up: "Levante para mudar de lugar sem riscar.",
+  pen_color: "Clique no código da cor (ex.: #ff0000 é vermelho) para escolher outra.",
+  pen_changeparam: "“mudar cor da caneta por 10” dentro de um laço faz um arco-íris.",
+  pen_setparam: "Transparência 50 deixa o risco meio transparente.",
+  pen_changesize: "Use para fazer linhas que engrossam.", pen_size: "1 é fininho; 20 é bem grosso.",
+  pen_text: "Ex.: escreva “Fim de jogo!” no meio do palco.",
+  mu_drum: "Ex.: “repetir 4: tocar tambor Bumbo por 0.5 batidas” faz uma batida.",
+  mu_rest: "Uma pausa no ritmo, sem som.",
+  mu_note: "Dó-Ré-Mi: 60, 62, 64. Tente compor uma música!",
+  mu_instr: "Troque para Flauta, Violão, Marimba…",
+  mu_settempo: "60 é calmo; 120 é animado.", mu_changetempo: "Use 20 para acelerar a música.", mu_tempo: "Diz o andamento atual.",
+  tts_speak: "Ex.: “falar Olá, tudo bem?”. Precisa do som ligado.",
+  tts_voice: "Experimente “gigante” e “gatinho”!", tts_lang: "Escolha o idioma antes de falar.",
+  jg_gravity: "1 é uma gravidade normal; 0.5 é como na Lua.",
+  jg_setvx: "Ex.: com a seta direita, “definir velocidade x como 5”.",
+  jg_setvy: "O pulo: “se tecla espaço pressionada? e no chão? então definir velocidade y como 12”.",
+  jg_changevx: "Bom para acelerar aos poucos, como um carro.",
+  jg_changevy: "Bom para um jetpack: “se tecla seta para cima pressionada? então mudar velocidade y por 1”.",
+  jg_step: "Coloque num “sempre”. Escolha o ator que é chão ou parede (ex.: Chão, Plataforma).",
+  jg_onground: "Use para só deixar pular quando estiver no chão.",
+  jg_vx: "Diz a velocidade para os lados.", jg_vy: "Diz a velocidade para cima ou para baixo.",
+  jg_save: "Ex.: “se pontos > valor salvo recorde então salvar pontos com o nome recorde”.",
+  jg_load: "Ex.: “dizer juntar Recorde: com valor salvo recorde”.",
+  jg_log: "Coloque em vários lugares para descobrir até onde o script chegou.",
+  jg_distxy: "Ex.: distância até o centro: x 0 y 0.",
+};
+// Primeira frase da dica, para caber embaixo do bloco na paleta
+function shortTip(t) { const s = String(t || "").split(/(?<=\.)\s/)[0].replace(/\s*\(Extra[^)]*\)\s*/, ""); return s.length > 62 ? s.slice(0, 60).trimEnd() + "…" : s; }
+function showBlockHelp(type) {
+  if (!type || !DEF[type]) return;
+  const d = DEF[type];
+  const cat = CAT[d.cat]?.[0] || "";
+  const name = type.startsWith("pc_") || type.startsWith("pd_") ? "seu bloco" : `“${blockText({ type, fields: {}, inputs: {} }).replace(/\(\)|<>|\[\]/g, "…")}”`;
+  const ex = EXAMPLES[type] || (type.startsWith("pc_") ? "Um bloco que você criou em Meus Blocos. O que ele faz está embaixo do “definir” dele." : type.startsWith("pd_") ? "Monte embaixo deste bloco o que o seu bloco deve fazer." : "");
+  const box = $("#blockHelpText");
+  box.innerHTML = `<b>${esc(name)}</b> <span class="muted">(${esc(cat)})</span> — ${esc(d.tip)}${ex ? ` <span class="muted">${esc(ex)}</span>` : ""}`;
+}
 
 // =====================================================================
 // Sincronização dos scripts: um documento por script (pilha de blocos)
@@ -1044,12 +1268,21 @@ function loadWorkspace() {
   ws.updateToolbox(buildToolbox());
   refreshPeerHighlights();
 }
+// Clicar ou arrastar um bloco da paleta também mostra a explicação dele
+function hookFlyoutHelp() {
+  const fw = ws.getFlyout?.()?.getWorkspace?.() || ws.getToolbox?.()?.getFlyout?.()?.getWorkspace?.();
+  if (!fw || fw.__babHelp) return;
+  fw.__babHelp = true;
+  fw.addChangeListener(e => { const id = e.blockId || e.newElementId; if (id && (e.type === Blockly.Events.CLICK || e.type === Blockly.Events.SELECTED)) { const b = fw.getBlockById(id); showBlockHelp((b?.getRootBlock?.() || b)?.type); } });
+}
+hookFlyoutHelp(); setTimeout(hookFlyoutHelp, 500);
 let lastPointer = { x: 0, y: 0 };
 $("#blocklyDiv").addEventListener("pointerdown", e => { lastPointer = { x: e.clientX, y: e.clientY }; }, true);
 ws.addChangeListener(e => {
   if (applying) return;
-  if (e.type === Blockly.Events.SELECTED) { room?.presence({ sel: e.newElementId || null }).catch(() => {}); return; }
-  if (e.type === Blockly.Events.CLICK && e.targetType === "block" && e.blockId) { clickBlock(e.blockId); return; }
+  if (e.type === Blockly.Events.SELECTED) { room?.presence({ sel: e.newElementId || null }).catch(() => {}); if (e.newElementId) showBlockHelp(ws.getBlockById(e.newElementId)?.type); return; }
+  if (e.type === Blockly.Events.CLICK && e.targetType === "block" && e.blockId) { showBlockHelp(ws.getBlockById(e.blockId)?.type); clickBlock(e.blockId); return; }
+  if (e.type === Blockly.Events.BLOCK_CREATE && e.json?.type) showBlockHelp(e.json.type);
   if (e.isUiEvent) return;
   scheduleDiff();
 });
@@ -2095,30 +2328,41 @@ function renderTiles() {
   $("#starterBtn")?.addEventListener("click", () => loadProjectData(starterData(), true));
   const bd = live(project.meta.backdrops)[rt.backdrop]?.[1];
   const dots = peers.filter(p => !p.isMe && p.presence?.sprite === STAGE).map(p => `<i style="background:${esc(p.presence.color || "#888")}"></i>`).join("");
-  $("#stageTile").innerHTML = `<span class="label">Palco</span><button class="tile ${curSid === STAGE ? "sel" : ""}" data-sid="${STAGE}"><span class="dots">${dots}</span><img alt="" src="${esc(thumb(bd))}"><span>${live(project.meta.backdrops).length} cenário(s)</span></button>`;
+  const n = live(project.meta.backdrops).length;
+  $("#stageTile").innerHTML = `<button class="tile ${curSid === STAGE ? "sel" : ""}" data-sid="${STAGE}" title="Editar os scripts e cenários do palco"><span class="dots">${dots}</span><img alt="" src="${esc(thumb(bd))}"><span>${esc(bd?.name || "sem cenário")}</span></button>
+    <span class="muted" style="font-size:.78rem">${n} cenário${n === 1 ? "" : "s"}</span>
+    <button class="btn small" id="pickBackdrop">Trocar cenário</button>`;
+  $("#pickBackdrop").onclick = () => { selectSprite(STAGE); document.querySelector('[data-tab="costumes"]').click(); };
 }
 document.addEventListener("click", e => { const t = e.target.closest(".tile[data-sid]"); if (t) selectSprite(t.dataset.sid); });
 function renderProps() {
   const box = $("#spriteProps");
-  if (curSid === STAGE || !curDoc()) { box.innerHTML = `<span class="muted">Editando o Palco: scripts do palco, cenários e sons.</span>`; return; }
+  if (curSid === STAGE || !curDoc()) {
+    $("#selTitle").textContent = "Palco";
+    box.innerHTML = `<p class="muted" style="margin:0;grid-column:1/-1">O palco é o fundo do jogo. Ele tem scripts (por exemplo, trocar de cenário ou tocar música), cenários e sons, mas não se move. Use as abas <b>Código</b>, <b>Cenários</b> e <b>Sons</b> à esquerda.</p>`;
+    return;
+  }
   const d = curDoc(), t = rt.targets.find(x => x.sid === curSid && !x.clone);
-  box.innerHTML = `<label>Ator <input class="name" id="pName" value="${esc(d.name)}" maxlength="30"></label>
-    <label>x <input id="pX" type="number" value="${Math.round(t ? t.x : d.x)}"></label>
-    <label>y <input id="pY" type="number" value="${Math.round(t ? t.y : d.y)}"></label>
-    <label>tamanho <input id="pSize" type="number" value="${Math.round(t ? t.size : d.size)}"></label>
-    <label>direção <input id="pDir" type="number" value="${Math.round(t ? t.dir : d.dir)}"></label>
-    <label>rotação <select id="pRot">${STATIC.rot.map(([n, v]) => `<option value="${v}" ${(d.rot || "all") === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
-    <label><input type="checkbox" id="pVis" ${d.visible !== false ? "checked" : ""}> visível</label>
-    <label><input type="checkbox" id="pDrag" ${d.draggable ? "checked" : ""}> arrastável no jogo</label>
-    <button class="btn small" id="pDup">Duplicar</button>
-    <button class="btn small danger" id="pDel">Apagar</button>`;
-  const upd = (k, f) => $("#" + k).addEventListener("change", e => {
+  const dir = Math.round(t ? t.dir : d.dir ?? 90), size = Math.round(t ? t.size : d.size ?? 100);
+  $("#selTitle").textContent = d.name;
+  box.innerHTML = `<label class="prop wide"><span>Nome</span><input id="pName" value="${esc(d.name)}" maxlength="30"></label>
+    <label class="prop"><span>Posição x</span><input id="pX" type="number" value="${Math.round(t ? t.x : d.x)}"><small>← −240 · 240 →</small></label>
+    <label class="prop"><span>Posição y</span><input id="pY" type="number" value="${Math.round(t ? t.y : d.y)}"><small>↓ −180 · 180 ↑</small></label>
+    <label class="prop wide"><span>Tamanho (%)</span><span class="inline"><input type="range" id="pSizeR" min="5" max="300" value="${Math.min(300, size)}" aria-label="Tamanho"><input id="pSize" type="number" value="${size}" aria-label="Tamanho em porcentagem"></span></label>
+    <label class="prop"><span>Direção</span><span class="inline"><span class="dir-dial" aria-hidden="true"><i style="transform:rotate(${dir + 180}deg)"></i></span><input id="pDir" type="number" value="${dir}" aria-label="Direção em graus"></span><small>90 = direita</small></label>
+    <label class="prop"><span>Ao girar</span><select id="pRot">${STATIC.rot.map(([n, v]) => `<option value="${v}" ${(d.rot || "all") === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+    <div class="toggles"><label><input type="checkbox" id="pVis" ${d.visible !== false ? "checked" : ""}> Aparece no palco</label><label><input type="checkbox" id="pDrag" ${d.draggable ? "checked" : ""}> Quem joga pode arrastar</label></div>
+    <div class="prop-actions"><button class="btn small" id="pDup">Duplicar ator</button><button class="btn small danger" id="pDel">Apagar ator</button><span class="muted" style="font-size:.78rem">Dica: arraste o ator no palco para mudar a posição.</span></div>`;
+  const upd = (k, f, ev = "change") => $("#" + k).addEventListener(ev, e => {
     const val = f(e.target); updateSprite(curSid, val);
     const tt = rt.targets.find(x => x.sid === curSid && !x.clone);
     if (tt) { if ("x" in val) tt.x = val.x; if ("y" in val) tt.y = val.y; if ("size" in val) tt.size = clampSize(tt, val.size); if ("dir" in val) turn(tt, val.dir); if ("visible" in val) tt.visible = val.visible; if ("rot" in val) tt.rot = val.rot; if ("draggable" in val) tt.draggable = val.draggable; }
+    if ("size" in val) { $("#pSize").value = val.size; $("#pSizeR").value = Math.min(300, val.size); }
+    if ("dir" in val) document.querySelector(".dir-dial i").style.transform = `rotate(${val.dir + 180}deg)`;
     renderTiles(); rt.redraw = true;
   });
   upd("pX", el => ({ x: num(el.value) })); upd("pY", el => ({ y: num(el.value) })); upd("pSize", el => ({ size: num(el.value) })); upd("pDir", el => ({ dir: num(el.value) }));
+  upd("pSizeR", el => ({ size: num(el.value) }), "input");
   upd("pVis", el => ({ visible: el.checked })); upd("pRot", el => ({ rot: el.value })); upd("pDrag", el => ({ draggable: el.checked }));
   $("#pName").addEventListener("change", e => renameSprite(curSid, e.target.value));
   $("#pDel").onclick = () => confirmBox(`Apagar o ator “${d.name}” e todos os scripts dele? Isso também apaga para a sua equipe.`, "Apagar ator", () => deleteSprite(curSid));
@@ -2128,7 +2372,8 @@ function renderVarList() {
   const box = $("#varList");
   const items = [...live(project.meta.vars).map(([id, v]) => [STAGE, "vars", id, v.name, v.shown]), ...live(project.meta.lists).map(([id, v]) => [STAGE, "lists", id, v.name + " (lista)", v.shown])];
   if (curDoc()) items.push(...live(curDoc().vars).map(([id, v]) => [curSid, "vars", id, v.name + " (deste ator)", v.shown]), ...live(curDoc().lists).map(([id, v]) => [curSid, "lists", id, v.name + " (lista deste ator)", v.shown]));
-  box.innerHTML = items.length ? `<span class="label" style="width:100%">Mostrar no palco</span>` + items.map(([w, k, id, n, sh]) => `<label><input type="checkbox" data-w="${esc(w)}" data-k="${k}" data-id="${esc(id)}" ${sh ? "checked" : ""}> ${esc(n)}</label>`).join("") : "";
+  $("#varSection").hidden = !items.length;
+  box.innerHTML = items.length ? `<span class="muted" style="width:100%;font-size:.8rem">Marque para mostrar o valor no palco. Arraste o mostrador para mudar o lugar; clique duas vezes para aumentar.</span>` + items.map(([w, k, id, n, sh]) => `<label><input type="checkbox" data-w="${esc(w)}" data-k="${k}" data-id="${esc(id)}" ${sh ? "checked" : ""}> ${esc(n)}</label>`).join("") : "";
   box.querySelectorAll("input").forEach(i => i.onchange = () => { const patch = { [i.dataset.k]: { [i.dataset.id]: { shown: i.checked } } }; i.dataset.w === STAGE ? updateMeta(patch) : updateSprite(i.dataset.w, patch); lastMonHTML = ""; renderMonitors(); });
 }
 function renameSprite(sid, name) {
@@ -2174,10 +2419,10 @@ let curTab = "code";
 document.querySelectorAll("#editorCard .tabs [data-tab]").forEach(b => b.addEventListener("click", () => {
   curTab = b.dataset.tab;
   document.querySelectorAll("#editorCard .tabs [data-tab]").forEach(x => x.setAttribute("aria-selected", x === b));
-  $("#paneCode").hidden = curTab !== "code"; $("#paneCostumes").hidden = curTab !== "costumes"; $("#paneSounds").hidden = curTab !== "sounds";
-  if (curTab === "code") setTimeout(() => Blockly.svgResize(ws), 0); else renderAssets();
+  $("#paneCode").hidden = curTab !== "code"; $("#paneCostumes").hidden = curTab !== "costumes"; $("#paneSounds").hidden = curTab !== "sounds"; $("#paneText").hidden = curTab !== "text";
+  if (curTab === "code") setTimeout(() => Blockly.svgResize(ws), 0); else { if (curTab === "text") diffWorkspace(); renderAssets(); }
 }));
-function renderAssets() { if (curTab === "costumes") renderCostumes(); else if (curTab === "sounds") renderSounds(); }
+function renderAssets() { if (curTab === "costumes") renderCostumes(); else if (curTab === "sounds") renderSounds(); else if (curTab === "text") renderTextCode(); }
 function renderCostumes() {
   const pane = $("#paneCostumes"), stage = curSid === STAGE, list = costumesOf(curSid);
   const t = stage ? null : rt.targets.find(x => x.sid === curSid && !x.clone);
@@ -2633,6 +2878,7 @@ $("#stepBtn").onclick = () => { stepToken++; };
 $("#speedSel").onchange = () => { if ($("#speedSel").value === "normal") { ws.highlightBlock(null); $("#stepBtn").hidden = true; } };
 $("#turboChk").onchange = e => { rt.turbo = e.target.checked; };
 $("#simpleChk").onchange = () => { ws.updateToolbox(buildToolbox()); try { localStorage.setItem("bab-simples", $("#simpleChk").checked ? "1" : "0"); } catch (_) {} };
+$("#tipsChk").onchange = () => { ws.updateToolbox(buildToolbox()); try { localStorage.setItem("bab-dicas", $("#tipsChk").checked ? "1" : "0"); } catch (_) {} };
 $("#projTitle").addEventListener("change", e => updateMeta({ title: e.target.value.trim() || "Meu projeto" }));
 $("#playerBtn").onclick = () => { document.body.classList.toggle("player"); $("#playerBtn").classList.toggle("on", document.body.classList.contains("player")); lastMonHTML = ""; setTimeout(() => { Blockly.svgResize(ws); renderMonitors(); }, 50); };
 $("#fullBtn").onclick = () => { const el = $("#stageBox"); (el.requestFullscreen ? el.requestFullscreen() : Promise.reject()).catch(() => { document.body.classList.add("player"); $("#playerBtn").classList.add("on"); narrate("Tela cheia não está disponível aqui; abri o modo jogador."); }); };
@@ -2781,6 +3027,43 @@ async function renderPeople() {
   }
   $("#syncWrap").hidden = !(room && list.length > 1);
 }
+// Cursores com nome (como num documento compartilhado)
+const cursorLayer = document.createElement("div"); cursorLayer.className = "cursor-layer"; $("#paneCode").append(cursorLayer);
+const wsOrigin = () => { const o = ws.getOriginOffsetInPixels(); const r = $("#blocklyDiv").getBoundingClientRect(), p = $("#paneCode").getBoundingClientRect(); return { x: o.x + (r.left - p.left), y: o.y + (r.top - p.top) }; };
+let lastCurSent = 0;
+$("#blocklyDiv").addEventListener("pointermove", e => {
+  if (!room || now() - lastCurSent < 50) return; lastCurSent = now();
+  const o = wsOrigin(), p = $("#paneCode").getBoundingClientRect();
+  room.presence({ cur: { x: Math.round((e.clientX - p.left - o.x) / ws.scale), y: Math.round((e.clientY - p.top - o.y) / ws.scale) } }).catch(() => {});
+});
+$("#blocklyDiv").addEventListener("pointerleave", () => room?.presence({ cur: null }).catch(() => {}));
+const personName = p => p.isMe ? "Você" : (profiles[p.by || p.presence?.uid]?.name || "Colega");
+function renderCursors() {
+  if ($("#paneCode").hidden) return;
+  const o = wsOrigin(), s = ws.scale, seen = new Set();
+  for (const p of peers) {
+    if (p.isMe || p.kind !== "viewer" || p.presence?.sprite !== curSid) continue;
+    const col = p.presence?.color || "#0f7c8a";
+    if (p.presence?.cur) {
+      const id = "c-" + p.peer; seen.add(id);
+      let el = cursorLayer.querySelector(`[data-id="${id}"]`);
+      if (!el) { el = document.createElement("div"); el.className = "peer-cursor"; el.dataset.id = id; el.innerHTML = `<svg width="16" height="20" viewBox="0 0 16 20"><path d="M1 1 L1 16 L5 12 L8 19 L11 18 L8 11 L14 11 Z" fill="${esc(col)}" stroke="#fff" stroke-width="1.5"/></svg><span></span>`; cursorLayer.append(el); }
+      el.style.setProperty("--pc", col); el.querySelector("span").textContent = personName(p);
+      el.style.transform = `translate(${o.x + p.presence.cur.x * s}px, ${o.y + p.presence.cur.y * s}px)`;
+    }
+    const b = p.presence?.sel && ws.getBlockById(p.presence.sel);
+    if (b) {
+      const id = "t-" + p.peer; seen.add(id);
+      let el = cursorLayer.querySelector(`[data-id="${id}"]`);
+      if (!el) { el = document.createElement("div"); el.className = "peer-tag"; el.dataset.id = id; cursorLayer.append(el); }
+      const xy = b.getRelativeToSurfaceXY();
+      el.style.setProperty("--pc", col); el.textContent = personName(p) + " está editando";
+      el.style.left = (o.x + xy.x * s) + "px"; el.style.top = (o.y + xy.y * s) + "px";
+    }
+  }
+  cursorLayer.querySelectorAll("[data-id]").forEach(el => { if (!seen.has(el.dataset.id)) el.remove(); });
+}
+setInterval(renderCursors, 100);
 let highlighted = [];
 function refreshPeerHighlights() {
   highlighted.forEach(el => { el.classList.remove("peer-sel"); el.style.removeProperty("--pc"); }); highlighted = [];
@@ -2864,6 +3147,336 @@ renderLesson(); openHelp("lesson");
 setInterval(tick, 1000 / 30);
 window.__bab = { project, rt, importSb3, loadProjectData, get curSid() { return curSid; } };
 connect();
+
+// =====================================================================
+// Aba “Python / Portugol”: os mesmos scripts escritos como código de texto
+// =====================================================================
+const codeView = { lang: "py", scope: "sprite", comments: true };
+try { Object.assign(codeView, JSON.parse(localStorage.getItem("bab-codigo") || "{}")); } catch (_) {}
+const ident = s => { let r = String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9_]+/g, "_").replace(/^_+|_+$/g, "").toLowerCase(); if (!r) r = "x"; if (/^\d/.test(r)) r = "_" + r; return r; };
+const quote = s => JSON.stringify(String(s ?? ""));
+const BINOPS = new Set(["op_add", "op_sub", "op_mul", "op_div", "op_mod", "op_pow", "op_gt", "op_lt", "op_eq", "op_and", "op_or", "op_join"]);
+function makeGen(L, comments) {
+  const py = L === "py";
+  const T = py ? "True" : "verdadeiro";
+  const self = n => py ? "eu." + n : n;
+  const obj = v => v === "_random_" ? "posicao_aleatoria()" : v === "_mouse_" ? "mouse()" : v === "_edge_" ? quote("borda") : v === "_myself_" ? (py ? "eu" : quote("eu mesmo")) : v === "_stage_" ? quote("Palco") : (py ? `ator(${quote(v)})` : quote(v));
+  const lit = (sh) => {
+    if (!sh) return "0";
+    const f = sh.fields || {};
+    if (sh.type === "b_num") return str(num(f.NUM));
+    if (sh.type === "b_color") return quote(f.COLOR);
+    const t = String(f.TEXT ?? "");
+    return t.trim() !== "" && Number.isFinite(Number(t)) ? String(Number(t)) : quote(t);
+  };
+  const ctx = { counters: 0 };
+  function x(b, name) { const i = b.inputs?.[name]; if (!i) return "0"; return i.block ? expr(i.block) : lit(i.shadow); }
+  function xp(b, name) { const i = b.inputs?.[name]; const c = x(b, name); return i?.block && BINOPS.has(i.block.type) ? `(${c})` : c; }
+  const f = (b, n) => b.fields?.[n] ?? "";
+  const v = (b, n) => ident(f(b, n));
+  function expr(b) {
+    const X = n => x(b, n), P = n => xp(b, n);
+    switch (b.type) {
+      case "b_num": case "b_text": case "b_color": return lit(b);
+      case "mv_x": return self("x"); case "mv_y": return self("y"); case "mv_dir": return self("direcao");
+      case "lk_costumenum": return f(b, "WHAT") === "name" ? "fantasia_nome()" : "fantasia_numero()";
+      case "lk_backdropnum": return f(b, "WHAT") === "name" ? "cenario_nome()" : "cenario_numero()";
+      case "lk_size": return self("tamanho"); case "snd_vol": return self("volume");
+      case "sn_touching": return `tocando_em(${obj(f(b, "OBJ"))})`;
+      case "sn_touchcolor": return `tocando_na_cor(${X("COLOR")})`;
+      case "sn_colortouch": return `cor_tocando_cor(${X("COLOR")}, ${X("COLOR2")})`;
+      case "sn_distance": return `distancia_ate(${obj(f(b, "OBJ"))})`;
+      case "sn_answer": return "resposta";
+      case "sn_keypressed": return `tecla_pressionada(${quote(KEYS.find(k => k[1] === f(b, "KEY"))?.[0] || f(b, "KEY"))})`;
+      case "sn_mousedown": return "mouse_pressionado()"; case "sn_mousex": return "mouse_x()"; case "sn_mousey": return "mouse_y()";
+      case "sn_loudness": return "volume_do_som()"; case "sn_timer": return "cronometro()";
+      case "sn_of": { const p = OF_PROPS.find(o => o[1] === f(b, "PROP"))?.[0] || f(b, "PROP"); return py ? `${obj(f(b, "OBJ"))}.${ident(p)}` : `propriedade(${quote(p)}, ${obj(f(b, "OBJ"))})`; }
+      case "sn_current": return `agora(${quote(STATIC.current.find(o => o[1] === f(b, "WHAT"))?.[0] || f(b, "WHAT"))})`;
+      case "sn_days": return "dias_desde_2000()"; case "sn_username": return "nome_de_usuario()";
+      case "op_add": return `${P("A")} + ${P("B")}`; case "op_sub": return `${P("A")} - ${P("B")}`;
+      case "op_mul": return `${P("A")} * ${P("B")}`; case "op_div": return `${P("A")} / ${P("B")}`;
+      case "op_mod": return `${P("A")} % ${P("B")}`;
+      case "op_pow": return py ? `${P("A")} ** ${P("B")}` : `Matematica.potencia(${X("A")}, ${X("B")})`;
+      case "op_random": return py ? `random.randint(${X("FROM")}, ${X("TO")})` : `Util.sorteia(${X("FROM")}, ${X("TO")})`;
+      case "op_gt": return `${P("A")} > ${P("B")}`; case "op_lt": return `${P("A")} < ${P("B")}`; case "op_eq": return `${P("A")} == ${P("B")}`;
+      case "op_and": return `${P("A")} ${py ? "and" : "e"} ${P("B")}`; case "op_or": return `${P("A")} ${py ? "or" : "ou"} ${P("B")}`;
+      case "op_not": return `${py ? "not" : "nao"} (${X("A")})`;
+      case "op_join": return py ? `str(${X("A")}) + str(${X("B")})` : `${P("A")} + ${P("B")}`;
+      case "op_letter": return py ? `str(${X("S")})[${P("N")} - 1]` : `Texto.obter_caracter(${X("S")}, ${P("N")} - 1)`;
+      case "op_length": return py ? `len(str(${X("S")}))` : `Texto.numero_caracteres(${X("S")})`;
+      case "op_contains": return py ? `${P("B")} in ${P("A")}` : `Texto.posicao_texto(${X("B")}, ${X("A")}, 0) >= 0`;
+      case "op_round": return py ? `round(${X("A")})` : `Matematica.arredondar(${X("A")}, 0)`;
+      case "op_max": return py ? `max(${X("A")}, ${X("B")})` : `Matematica.maior_numero(${X("A")}, ${X("B")})`;
+      case "op_min": return py ? `min(${X("A")}, ${X("B")})` : `Matematica.menor_numero(${X("A")}, ${X("B")})`;
+      case "op_math": {
+        const a = X("A"), op = f(b, "OP");
+        if (py) return ({ abs: `abs(${a})`, floor: `math.floor(${a})`, ceiling: `math.ceil(${a})`, sqrt: `math.sqrt(${a})`, sin: `math.sin(math.radians(${a}))`, cos: `math.cos(math.radians(${a}))`, tan: `math.tan(math.radians(${a}))`, asin: `math.degrees(math.asin(${a}))`, acos: `math.degrees(math.acos(${a}))`, atan: `math.degrees(math.atan(${a}))`, ln: `math.log(${a})`, log: `math.log10(${a})`, "e ^": `math.exp(${a})`, "10 ^": `10 ** ${a}` })[op] || a;
+        return ({ abs: `Matematica.valor_absoluto(${a})`, floor: `Matematica.arredondar(${a} - 0.5, 0)`, ceiling: `Matematica.arredondar(${a} + 0.5, 0)`, sqrt: `Matematica.raiz(${a}, 2.0)`, sin: `Matematica.seno(${a} * Matematica.PI / 180)`, cos: `Matematica.cosseno(${a} * Matematica.PI / 180)`, tan: `Matematica.tangente(${a} * Matematica.PI / 180)`, ln: `Matematica.logaritmo(${a}, 2.718281828)`, log: `Matematica.logaritmo(${a}, 10.0)`, "e ^": `Matematica.potencia(2.718281828, ${a})`, "10 ^": `Matematica.potencia(10.0, ${a})` })[op] || `${op}(${a})`;
+      }
+      case "var_get": return v(b, "VAR");
+      case "list_get": return py ? `" ".join(map(str, ${v(b, "LIST")}))` : `juntar_lista(${v(b, "LIST")})`;
+      case "list_item": return `${v(b, "LIST")}[${xp(b, "INDEX")} - 1]`;
+      case "list_indexof": return py ? `posicao_em(${v(b, "LIST")}, ${X("ITEM")})` : `posicao_em(${v(b, "LIST")}, ${X("ITEM")})`;
+      case "list_length": return py ? `len(${v(b, "LIST")})` : `tamanho_da_lista(${v(b, "LIST")})`;
+      case "list_contains": return py ? `${xp(b, "ITEM")} in ${v(b, "LIST")}` : `lista_contem(${v(b, "LIST")}, ${X("ITEM")})`;
+      case "proc_arg": case "proc_argb": return ident(f(b, "VALUE"));
+      case "mu_tempo": return "andamento()";
+      case "jg_onground": return "no_chao()"; case "jg_vx": return self("velocidade_x"); case "jg_vy": return self("velocidade_y");
+      case "jg_load": return `valor_salvo(${X("KEY")})`;
+      case "jg_distxy": return `distancia_ate_ponto(${X("X")}, ${X("Y")})`;
+    }
+    return `${ident(b.type)}()`;
+  }
+  // Comandos: devolve uma lista de linhas já indentadas
+  function stmts(b, ind) {
+    const out = [];
+    for (let cur = b; cur; cur = cur.next?.block) out.push(...stmt(cur, ind));
+    return out;
+  }
+  function body(b, name, ind) { const inner = b.inputs?.[name]?.block; const s = inner ? stmts(inner, ind) : []; return s.length ? s : [ind + (py ? "pass" : "// (vazio)")]; }
+  const line = (ind, code, b) => ind + code + (comments && DEF[b.type] ? (py ? "  # " : "  // ") + shortTip(DEF[b.type].tip) : "");
+  function stmt(b, ind) {
+    const X = n => x(b, n), P = n => xp(b, n), I2 = ind + (py ? "    " : "\t");
+    const one = code => [line(ind, code, b)];
+    const block = (head, parts) => py
+      ? [line(ind, head + ":", b), ...parts[0]]
+      : [line(ind, head, b), ind + "{", ...parts[0], ind + "}"];
+    switch (b.type) {
+      case "mv_move": return one(`mover(${X("STEPS")})`);
+      case "mv_turnr": return one(`girar_direita(${X("DEG")})`);
+      case "mv_turnl": return one(`girar_esquerda(${X("DEG")})`);
+      case "mv_goto": return one(`ir_para(${obj(f(b, "TO"))})`);
+      case "mv_gotoxy": return one(`ir_para_xy(${X("X")}, ${X("Y")})`);
+      case "mv_glide": return one(`deslizar_ate(${X("X")}, ${X("Y")}, ${py ? "segundos=" : ""}${X("SECS")})`);
+      case "mv_glideto": return one(`deslizar_para(${obj(f(b, "TO"))}, ${py ? "segundos=" : ""}${X("SECS")})`);
+      case "mv_pointdir": return one(`${self("direcao")} = ${X("DIR")}`);
+      case "mv_pointto": return one(`apontar_para(${obj(f(b, "TO"))})`);
+      case "mv_changex": return one(py ? `eu.x += ${X("DX")}` : `x = x + ${P("DX")}`);
+      case "mv_setx": return one(`${self("x")} = ${X("X")}`);
+      case "mv_changey": return one(py ? `eu.y += ${X("DY")}` : `y = y + ${P("DY")}`);
+      case "mv_sety": return one(`${self("y")} = ${X("Y")}`);
+      case "mv_bounce": return one("se_tocar_na_borda_volte()");
+      case "mv_rotstyle": return one(`definir_estilo_rotacao(${quote(STATIC.rot.find(o => o[1] === f(b, "STYLE"))?.[0])})`);
+      case "lk_sayfor": return one(`dizer(${X("MSG")}, ${X("SECS")})`);
+      case "lk_say": return one(`dizer(${X("MSG")})`);
+      case "lk_thinkfor": return one(`pensar(${X("MSG")}, ${X("SECS")})`);
+      case "lk_think": return one(`pensar(${X("MSG")})`);
+      case "lk_costume": return one(`mudar_fantasia(${quote(f(b, "COSTUME"))})`);
+      case "lk_nextcostume": return one("proxima_fantasia()");
+      case "lk_backdrop": return one(`mudar_cenario(${quote(f(b, "BACKDROP"))})`);
+      case "lk_backdropwait": return one(`mudar_cenario_e_esperar(${quote(f(b, "BACKDROP"))})`);
+      case "lk_nextbackdrop": return one("proximo_cenario()");
+      case "lk_changesize": return one(py ? `eu.tamanho += ${X("CHANGE")}` : `tamanho = tamanho + ${P("CHANGE")}`);
+      case "lk_setsize": return one(`${self("tamanho")} = ${X("SIZE")}`);
+      case "lk_changeeffect": return one(`mudar_efeito(${quote(f(b, "EFFECT"))}, ${X("CHANGE")})`);
+      case "lk_seteffect": return one(`definir_efeito(${quote(f(b, "EFFECT"))}, ${X("VALUE")})`);
+      case "lk_cleareffects": return one("limpar_efeitos()");
+      case "lk_show": return one("mostrar()"); case "lk_hide": return one("esconder()");
+      case "lk_layer": return one(`ir_para_camada(${quote(f(b, "LAYER") === "front" ? "frente" : "tras")})`);
+      case "lk_layers": return one(`mover_camadas(${f(b, "DIR") === "forward" ? "" : "-"}${P("NUM")})`);
+      case "snd_playwait": return one(`tocar_som_ate_o_fim(${quote(f(b, "SOUND"))})`);
+      case "snd_play": return one(`tocar_som(${quote(f(b, "SOUND"))})`);
+      case "snd_stop": return one("parar_todos_os_sons()");
+      case "snd_changeeffect": return one(`mudar_efeito_som(${quote(f(b, "EFFECT"))}, ${X("VALUE")})`);
+      case "snd_seteffect": return one(`definir_efeito_som(${quote(f(b, "EFFECT"))}, ${X("VALUE")})`);
+      case "snd_cleareffects": return one("limpar_efeitos_som()");
+      case "snd_changevol": return one(py ? `eu.volume += ${X("V")}` : `volume = volume + ${P("V")}`);
+      case "snd_setvol": return one(`${self("volume")} = ${X("V")}`);
+      case "ev_broadcast": return one(`transmitir(${quote(f(b, "MSG"))})`);
+      case "ev_broadcastwait": return one(`transmitir_e_esperar(${quote(f(b, "MSG"))})`);
+      case "ct_wait": return one(py ? `esperar(${X("SECS")})` : `Util.aguarde(${P("SECS")} * 1000)`);
+      case "ct_repeat": { const c = "ijklmn"[ctx.counters++ % 6]; const r = block(py ? `for ${c === "i" ? "_" : c} in range(${X("TIMES")})` : `para (inteiro ${c} = 1; ${c} <= ${X("TIMES")}; ${c}++)`, [body(b, "SUBSTACK", I2)]); ctx.counters--; return r; }
+      case "ct_forever": return block(py ? "while True" : "enquanto (verdadeiro)", [body(b, "SUBSTACK", I2)]);
+      case "ct_if": return block(py ? `if ${X("COND")}` : `se (${X("COND")})`, [body(b, "SUBSTACK", I2)]);
+      case "ct_ifelse": return py
+        ? [line(ind, `if ${X("COND")}:`, b), ...body(b, "SUBSTACK", I2), ind + "else:", ...body(b, "SUBSTACK2", I2)]
+        : [line(ind, `se (${X("COND")})`, b), ind + "{", ...body(b, "SUBSTACK", I2), ind + "}", ind + "senao", ind + "{", ...body(b, "SUBSTACK2", I2), ind + "}"];
+      case "ct_waituntil": return py ? [line(ind, `while not (${X("COND")}):`, b), I2 + "esperar_quadro()"] : [line(ind, `enquanto (nao (${X("COND")}))`, b), ind + "{", I2 + "esperar_quadro()", ind + "}"];
+      case "ct_repeatuntil": return block(py ? `while not (${X("COND")})` : `enquanto (nao (${X("COND")}))`, [body(b, "SUBSTACK", I2)]);
+      case "ct_while": return block(py ? `while ${X("COND")}` : `enquanto (${X("COND")})`, [body(b, "SUBSTACK", I2)]);
+      case "ct_foreach": { const n = v(b, "VAR"); return block(py ? `for ${n} in range(1, ${P("N")} + 1)` : `para (${n} = 1; ${n} <= ${X("N")}; ${n}++)`, [body(b, "SUBSTACK", I2)]); }
+      case "ct_stop": { const w = f(b, "WHAT"); return one(w === "all" ? "parar_tudo()" : w === "this" ? (py ? "return" : "retorne") : "parar_outros_scripts()"); }
+      case "ct_clone": return one(`criar_clone(${obj(f(b, "OF"))})`);
+      case "ct_deleteclone": return one("apagar_este_clone()");
+      case "sn_ask": return py ? one(`resposta = input(${X("Q")})`) : [line(ind, `escreva(${X("Q")}, "\\n")`, b), ind + "leia(resposta)"];
+      case "sn_drag": return one(`definir_arrastavel(${f(b, "MODE") === "yes" ? T : (py ? "False" : "falso")})`);
+      case "sn_resettimer": return one("zerar_cronometro()");
+      case "var_set": return one(`${v(b, "VAR")} = ${X("VALUE")}`);
+      case "var_change": return one(py ? `${v(b, "VAR")} += ${X("VALUE")}` : `${v(b, "VAR")} = ${v(b, "VAR")} + ${P("VALUE")}`);
+      case "var_show": return one(`mostrar_variavel(${quote(f(b, "VAR"))})`);
+      case "var_hide": return one(`esconder_variavel(${quote(f(b, "VAR"))})`);
+      case "list_add": return one(py ? `${v(b, "LIST")}.append(${X("ITEM")})` : `adicionar(${v(b, "LIST")}, ${X("ITEM")})`);
+      case "list_delete": return one(py ? `del ${v(b, "LIST")}[${P("INDEX")} - 1]` : `remover(${v(b, "LIST")}, ${X("INDEX")})`);
+      case "list_clear": return one(py ? `${v(b, "LIST")}.clear()` : `limpar_lista(${v(b, "LIST")})`);
+      case "list_insert": return one(py ? `${v(b, "LIST")}.insert(${P("INDEX")} - 1, ${X("ITEM")})` : `inserir(${v(b, "LIST")}, ${X("INDEX")}, ${X("ITEM")})`);
+      case "list_replace": return one(`${v(b, "LIST")}[${P("INDEX")} - 1] = ${X("ITEM")}`);
+      case "list_show": return one(`mostrar_lista(${quote(f(b, "LIST"))})`);
+      case "list_hide": return one(`esconder_lista(${quote(f(b, "LIST"))})`);
+      case "pen_clear": return one("apagar_tudo()"); case "pen_stamp": return one("carimbar()");
+      case "pen_down": return one("abaixar_caneta()"); case "pen_up": return one("levantar_caneta()");
+      case "pen_color": return one(`definir_cor_caneta(${X("COLOR")})`);
+      case "pen_changeparam": return one(`mudar_caneta(${quote(STATIC.penparam.find(o => o[1] === f(b, "PARAM"))?.[0])}, ${X("V")})`);
+      case "pen_setparam": return one(`definir_caneta(${quote(STATIC.penparam.find(o => o[1] === f(b, "PARAM"))?.[0])}, ${X("V")})`);
+      case "pen_size": return one(`definir_tamanho_caneta(${X("V")})`);
+      case "pen_changesize": return one(`mudar_tamanho_caneta(${X("V")})`);
+      case "pen_text": return one(`escrever(${X("TEXT")}, ${X("SIZE")})`);
+      case "mu_drum": return one(`tocar_tambor(${f(b, "DRUM")}, ${X("BEATS")})`);
+      case "mu_rest": return one(`pausa(${X("BEATS")})`);
+      case "mu_note": return one(`tocar_nota(${X("NOTE")}, ${X("BEATS")})`);
+      case "mu_instr": return one(`mudar_instrumento(${f(b, "INSTR")})`);
+      case "mu_settempo": return one(`definir_andamento(${X("T")})`);
+      case "mu_changetempo": return one(`mudar_andamento(${X("T")})`);
+      case "tts_speak": return one(`falar(${X("W")})`);
+      case "tts_voice": return one(`definir_voz(${quote(VOICES.find(o => o[0] === f(b, "VOICE"))?.[1])})`);
+      case "tts_lang": return one(`definir_idioma(${quote(f(b, "LANG"))})`);
+      case "jg_gravity": return one(`definir_gravidade(${X("G")})`);
+      case "jg_setvx": return one(`${self("velocidade_x")} = ${X("V")}`);
+      case "jg_setvy": return one(`${self("velocidade_y")} = ${X("V")}`);
+      case "jg_changevx": return one(py ? `eu.velocidade_x += ${X("V")}` : `velocidade_x = velocidade_x + ${P("V")}`);
+      case "jg_changevy": return one(py ? `eu.velocidade_y += ${X("V")}` : `velocidade_y = velocidade_y + ${P("V")}`);
+      case "jg_step": return one(`mover_com_fisica(${obj(f(b, "SOLID"))})`);
+      case "jg_save": return one(`salvar(${X("VALUE")}, ${X("KEY")})`);
+      case "jg_log": return one(py ? `print(${X("TEXT")})` : `escreva(${X("TEXT")}, "\\n")`);
+    }
+    if (b.type.startsWith("pc_")) {
+      const p = findProcSpec(b.type.slice(3));
+      const args = (p?.spec || []).filter(s => s.k !== "label").map((s, i) => x(b, "A" + i));
+      return one(`${procName(p)}(${args.join(", ")})`);
+    }
+    if (DEF[b.type]?.kind === "rep" || DEF[b.type]?.kind === "bool") return one(expr(b));
+    return [ind + (py ? "# " : "// ") + "(bloco sem tradução) " + blockText(b)];
+  }
+  // Variáveis usadas (para o “global” do Python e as declarações do Portugol)
+  function assigned(b, set = new Set()) {
+    if (!b) return set;
+    if (["var_set", "var_change", "ct_foreach"].includes(b.type)) set.add(v(b, "VAR"));
+    if (b.type === "sn_ask") set.add("resposta");
+    for (const i in (b.inputs || {})) assigned(b.inputs[i].block, set);
+    return assigned(b.next?.block, set);
+  }
+  return { stmts, expr, assigned, ctx };
+}
+function findProcSpec(pid) { for (const s of [project.meta, ...spriteList().map(([, d]) => d)]) { const p = s?.procs?.[pid]; if (p) return p; } return null; }
+function procName(p) { return ident((p?.spec || []).filter(s => s.k === "label").map(s => s.text).join(" ") || "meu_bloco"); }
+const KEYNAME = k => ident(KEYS.find(x => x[1] === k)?.[0] || k);
+
+function generateCode(L, scope, comments) {
+  const py = L === "py", G = makeGen(L, comments);
+  const targets = scope === "project" ? [[STAGE, "Palco"], ...spriteList().map(([id, s]) => [id, s.name])] : [[curSid, curSid === STAGE ? "Palco" : curDoc()?.name || "Ator"]];
+  const used = new Map(); const fname = base => { const n = (used.get(base) || 0) + 1; used.set(base, n); return n > 1 ? `${base}_${n}` : base; };
+  const out = [], flags = [];
+  const globals = [...live(project.meta.vars).map(([, v]) => [v.name, v.value]), ...targets.flatMap(([sid]) => live(docOf(sid)?.vars).map(([, v]) => [v.name, v.value]))];
+  const lists = [...live(project.meta.lists).map(([, v]) => v.name), ...targets.flatMap(([sid]) => live(docOf(sid)?.lists).map(([, v]) => v.name))];
+  const sections = [];
+  for (const [sid, name] of targets) {
+    const scripts = [...project.scripts.values()].filter(s => s.sprite === sid && s.block).sort((a, b) => (a.block.y || 0) - (b.block.y || 0) || (a.block.x || 0) - (b.block.x || 0));
+    if (!scripts.length && scope === "project") continue;
+    const prefix = scope === "project" ? ident(name) + "_" : "";
+    const sec = [];
+    if (scope === "project") sec.push(py ? `# ===== ${name} =====` : `\t// ===== ${name} =====`);
+    let loose = 0;
+    // Meus Blocos primeiro (precisam existir antes de serem usados)
+    const ordered = [...scripts.filter(s => s.block.type.startsWith("pd_")), ...scripts.filter(s => !s.block.type.startsWith("pd_"))];
+    for (const s of ordered) {
+      const b = s.block, d = DEF[b.type], hatOnly = d?.kind === "hat";
+      let head, deco = null, fn, params = "";
+      const fl = b.fields || {};
+      switch (b.type) {
+        case "ev_flag": fn = fname(prefix + "ao_iniciar"); deco = "@quando_bandeira_clicada"; flags.push(fn); break;
+        case "ev_key": fn = fname(prefix + "ao_apertar_" + KEYNAME(fl.KEY)); deco = `@quando_tecla(${quote(KEYS.find(k => k[1] === fl.KEY)?.[0] || fl.KEY)})`; break;
+        case "ev_keyup": fn = fname(prefix + "ao_soltar_" + KEYNAME(fl.KEY)); deco = `@quando_soltar_tecla(${quote(KEYS.find(k => k[1] === fl.KEY)?.[0] || fl.KEY)})`; break;
+        case "ev_click": fn = fname(prefix + "ao_clicar"); deco = "@quando_clicado"; break;
+        case "ev_stageclick": fn = fname(prefix + "ao_clicar_no_palco"); deco = "@quando_palco_clicado"; break;
+        case "ev_backdrop": fn = fname(prefix + "ao_mudar_para_" + ident(fl.BACKDROP)); deco = `@quando_cenario_mudar(${quote(fl.BACKDROP)})`; break;
+        case "ev_gt": fn = fname(prefix + "quando_" + ident(fl.WHAT === "timer" ? "cronometro" : "volume") + "_passar"); deco = `@quando_maior(${quote(fl.WHAT === "timer" ? "cronômetro" : "volume do som")}, ${G.expr(b.inputs?.VALUE?.block || b.inputs?.VALUE?.shadow || { type: "b_num", fields: { NUM: 0 } })})`; break;
+        case "ev_receive": fn = fname(prefix + "ao_receber_" + ident(fl.MSG)); deco = `@quando_receber(${quote(fl.MSG)})`; break;
+        case "ct_startclone": fn = fname(prefix + "ao_nascer_clone"); deco = "@quando_comecar_como_clone"; break;
+        default:
+          if (b.type.startsWith("pd_")) { const p = findProcSpec(b.type.slice(3)); fn = procName(p); params = (p?.spec || []).filter(x => x.k !== "label").map(x => py ? ident(x.name) : `${x.k === "bool" ? "logico" : "real"} ${ident(x.name)}`).join(", "); break; }
+          fn = fname(prefix + "blocos_soltos"); loose++;
+      }
+      const start = hatOnly || b.type.startsWith("pd_") ? b.next?.block : b;
+      const ind = py ? "    " : "\t\t";
+      const bodyLines = start ? G.stmts(start, ind) : [ind + (py ? "pass" : "// (vazio)")];
+      const glob = [...G.assigned(start)].filter(n => n !== "resposta" || py);
+      if (py) {
+        if (!hatOnly && !b.type.startsWith("pd_")) sec.push("# Blocos soltos: só rodam se você clicar neles");
+        if (deco) sec.push(deco);
+        sec.push(`def ${fn}(${params}):`);
+        if (glob.length) sec.push(`    global ${glob.join(", ")}`);
+        sec.push(...bodyLines, "");
+      } else {
+        sec.push(`\t// ${b.type.startsWith("pd_") ? "Meu bloco" : (d ? blockText(b) : "Blocos soltos (só rodam se você clicar neles)")}`);
+        sec.push(`\tfuncao ${fn}(${params})`, "\t{", ...bodyLines, "\t}", "");
+      }
+    }
+    if (sec.length) sections.push(sec);
+  }
+  const title = scope === "project" ? project.meta.title : targets[0][1];
+  if (py) {
+    out.push(`# ${title}: código gerado pelo Bloco a Bloco a partir dos seus blocos.`);
+    out.push("# Funções como mover() e dizer() têm o mesmo nome dos blocos, em português.");
+    out.push("from bloco_a_bloco import *", "import random, math", "");
+    if (globals.length || lists.length) { out.push("# Variáveis e listas"); globals.forEach(([n, v]) => out.push(`${ident(n)} = ${typeof v === "number" || (String(v).trim() !== "" && Number.isFinite(Number(v))) ? Number(v) : quote(v)}`)); lists.forEach(n => out.push(`${ident(n)} = []`)); out.push(""); }
+    sections.forEach(s => out.push(...s));
+    if (!sections.length) out.push("# Ainda não há scripts aqui. Monte blocos na aba Código e volte.");
+  } else {
+    out.push("programa", "{", "\tinclua biblioteca Util", "\tinclua biblioteca Matematica", "\tinclua biblioteca Texto", "");
+    out.push(`\t// ${title}: código gerado pelo Bloco a Bloco a partir dos seus blocos.`);
+    out.push("\t// Funções como mover() e dizer() têm o mesmo nome dos blocos.", "");
+    if (globals.length || lists.length) { out.push("\t// Variáveis e listas"); globals.forEach(([n, v]) => { const isNum = typeof v === "number" || (String(v).trim() !== "" && Number.isFinite(Number(v))); out.push(`\t${isNum ? "real" : "cadeia"} ${ident(n)} = ${isNum ? Number(v) : quote(v)}`); }); lists.forEach(n => out.push(`\tcadeia ${ident(n)}[100]  // lista`)); out.push(""); }
+    out.push("\tcadeia resposta = \"\"", "");
+    out.push("\tfuncao inicio()", "\t{");
+    if (flags.length) { out.push("\t\t// Quando o ▶ é clicado, estes scripts começam (no Bloco a Bloco eles rodam ao mesmo tempo)"); flags.forEach(fn => out.push(`\t\t${fn}()`)); }
+    else out.push("\t\t// Nenhum script começa com “quando ▶ for clicado”.");
+    out.push("\t}", "");
+    sections.forEach(s => out.push(...s));
+    out.push("}");
+  }
+  return out.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+function highlight(code, L) {
+  const kw = L === "py" ? "def|global|for|in|range|while|if|else|not|and|or|return|pass|True|False|from|import|del" : "programa|inclua|biblioteca|funcao|para|enquanto|se|senao|e|ou|nao|retorne|verdadeiro|falso|real|inteiro|cadeia|logico|escreva|leia";
+  const re = new RegExp(`(${L === "py" ? "#" : "\\/\\/"}[^\\n]*)|("(?:[^"\\\\\\n]|\\\\.)*")|(@[a-z_]+)|\\b(${kw})\\b|\\b(\\d+(?:\\.\\d+)?)\\b|\\b([A-Za-z_][\\w.]*)(?=\\()`, "g");
+  let html = "", last = 0;
+  code.replace(re, (m, cm, st, dec, k, n, fn, i) => {
+    html += esc(code.slice(last, i));
+    html += cm ? `<span class="cm">${esc(cm)}</span>` : st ? `<span class="st">${esc(st)}</span>` : dec ? `<span class="fn">${esc(dec)}</span>` : k ? `<span class="kw">${esc(k)}</span>` : n ? `<span class="nu">${esc(n)}</span>` : `<span class="fn">${esc(fn)}</span>`;
+    last = i + m.length; return m;
+  });
+  return html + esc(code.slice(last));
+}
+const CODE_GUIDE = {
+  py: [["quando ▶ for clicado", "@quando_bandeira_clicada\ndef …():"], ["repetir 10 vezes", "for _ in range(10):"], ["sempre", "while True:"], ["se … então / senão", "if …:  /  else:"], ["definir pontos como 0", "pontos = 0"], ["adicionar 1 a pontos", "pontos += 1"], ["mudar x por 10", "eu.x += 10"], ["e / ou / não", "and / or / not"], ["perguntar e esperar", "resposta = input(…)"], ["Meus Blocos", "def pular(altura):"]],
+  pt: [["quando ▶ for clicado", "funcao inicio()"], ["repetir 10 vezes", "para (inteiro i = 1; i <= 10; i++)"], ["sempre", "enquanto (verdadeiro)"], ["se … então / senão", "se (…) { } senao { }"], ["definir pontos como 0", "pontos = 0"], ["adicionar 1 a pontos", "pontos = pontos + 1"], ["esperar 1 segundo", "Util.aguarde(1000)"], ["e / ou / não", "e / ou / nao"], ["perguntar e esperar", "escreva(…)  leia(resposta)"], ["Meus Blocos", "funcao pular(real altura)"]],
+};
+function renderTextCode() {
+  const pane = $("#paneText"), L = codeView.lang;
+  const code = generateCode(L, codeView.scope, codeView.comments);
+  pane.innerHTML = `<div class="code-bar">
+      <div class="seg" role="group" aria-label="Linguagem"><button data-lang="py" aria-pressed="${L === "py"}">Python</button><button data-lang="pt" aria-pressed="${L === "pt"}">Portugol</button></div>
+      <div class="seg" role="group" aria-label="Mostrar"><button data-scope="sprite" aria-pressed="${codeView.scope === "sprite"}">${esc(curSid === STAGE ? "Palco" : curDoc()?.name || "Ator")}</button><button data-scope="project" aria-pressed="${codeView.scope === "project"}">Projeto inteiro</button></div>
+      <label class="check"><input type="checkbox" id="cmtChk" ${codeView.comments ? "checked" : ""}> Explicar cada linha</label>
+      <span style="flex:1"></span>
+      <button class="btn small" id="copyCode">Copiar código</button><button class="btn small" id="saveCode">Baixar</button>
+    </div>
+    <div class="code-wrap"><pre class="code" id="codeOut" tabindex="0">${highlight(code, L)}</pre>
+      <aside class="code-guide"><h3>Bloco ↔ ${L === "py" ? "Python" : "Portugol"}</h3>
+        <p class="muted" style="margin:0">${L === "py" ? "Python é uma das linguagens mais usadas no mundo. Note os dois-pontos (:) e o recuo de 4 espaços: é assim que o Python sabe o que fica “dentro” de um laço ou de um se." : "Portugol é usado em escolas para aprender lógica de programação em português. As chaves { } mostram o que fica “dentro” de um laço ou de um se."}</p>
+        <dl>${CODE_GUIDE[L].map(([a, b2]) => `<dd>Bloco “${esc(a)}”</dd><dt>${esc(b2)}</dt>`).join("")}</dl>
+        <p class="muted" style="margin:0">Os comandos de jogo (mover, dizer, tocar_som…) vêm da “biblioteca” do Bloco a Bloco. A lógica (laços, se, variáveis, contas) é ${L === "py" ? "Python" : "Portugol"} de verdade.</p>
+      </aside></div>`;
+  pane.querySelectorAll("[data-lang]").forEach(b => b.onclick = () => { codeView.lang = b.dataset.lang; saveCodeView(); renderTextCode(); });
+  pane.querySelectorAll("[data-scope]").forEach(b => b.onclick = () => { codeView.scope = b.dataset.scope; saveCodeView(); renderTextCode(); });
+  $("#cmtChk").onchange = e => { codeView.comments = e.target.checked; saveCodeView(); renderTextCode(); };
+  $("#copyCode").onclick = async () => { try { await navigator.clipboard.writeText(code); narrate("Código copiado."); } catch (_) { const r = document.createRange(); r.selectNodeContents($("#codeOut")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); narrate("Código selecionado: aperte Ctrl+C para copiar."); } };
+  $("#saveCode").onclick = async () => {
+    const name = ident(project.meta.title || "projeto") + (L === "py" ? "_python.txt" : "_portugol.txt");
+    if (downloads) { try { await downloads.save({ filename: name, data: code }); } catch (_) {} return; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([code], { type: "text/plain" })); a.download = name.replace(/_python\.txt$/, ".py").replace(/_portugol\.txt$/, ".por"); document.body.append(a); a.click(); a.remove();
+  };
+}
+function saveCodeView() { try { localStorage.setItem("bab-codigo", JSON.stringify(codeView)); } catch (_) {} }
 
 })();
 </script>
