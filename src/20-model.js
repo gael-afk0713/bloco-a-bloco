@@ -1,13 +1,14 @@
 // =====================================================================
 // Banco de dados: compartilhado (dentro do Claude) ou local (neste navegador)
 // =====================================================================
-function makeLocalDB() {
-  const KEY = "bab-projeto-v3";
+// hooks.onWrite (sala por código) recebe cada mudança feita aqui para mandar aos colegas
+function makeLocalDB(KEY = "bab-projeto-v3", hooks = {}) {
   let data = {};
   try { data = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (_) {}
   const listeners = [];
   let timer = null;
   const persist = () => { clearTimeout(timer); timer = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (_) { showBanner("O navegador não tem mais espaço para guardar este projeto. Use “Salvar no computador”."); } }, 300); };
+  addEventListener("pagehide", () => { if (timer) { clearTimeout(timer); timer = null; try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (_) {} } });
   const snap = (id, d) => ({ id, exists: d !== undefined, data: () => d, metadata: { fromCache: false, hasPendingWrites: false } });
   const emit = (path, type, old) => {
     const [col, id] = path.split("/");
@@ -17,13 +18,20 @@ function makeLocalDB() {
     });
   };
   const doc = path => ({
-    set: async d => { const had = path in data; data[path] = JSON.parse(JSON.stringify(d)); persist(); emit(path, had ? "modified" : "added"); },
-    update: async d => { const had = path in data; data[path] = deepMerge(data[path], JSON.parse(JSON.stringify(d))); persist(); emit(path, had ? "modified" : "added"); },
-    delete: async () => { if (!(path in data)) return; const old = data[path]; delete data[path]; persist(); emit(path, "removed", old); },
+    set: async d => { const had = path in data; data[path] = JSON.parse(JSON.stringify(d)); persist(); emit(path, had ? "modified" : "added"); hooks.onWrite?.(path, data[path]); },
+    update: async d => { const had = path in data; data[path] = deepMerge(data[path], JSON.parse(JSON.stringify(d))); persist(); emit(path, had ? "modified" : "added"); hooks.onWrite?.(path, data[path]); },
+    delete: async () => { if (!(path in data)) return; const old = data[path]; delete data[path]; persist(); emit(path, "removed", old); hooks.onWrite?.(path, undefined); },
     onSnapshot: fn => { const l = { doc: path, fn }; listeners.push(l); setTimeout(() => fn(snap(path.split("/")[1], data[path]))); return () => listeners.splice(listeners.indexOf(l), 1); },
   });
   return {
-    local: true, doc,
+    local: !hooks.onWrite, doc,
+    // Aplica uma mudança que veio de um colega (sem mandar de volta)
+    _apply(path, d) {
+      const had = path in data;
+      if (d === undefined) { if (!had) return; const old = data[path]; delete data[path]; persist(); emit(path, "removed", old); return; }
+      data[path] = d; persist(); emit(path, had ? "modified" : "added");
+    },
+    _all: () => data,
     collection: col => ({
       onSnapshot: fn => {
         const l = { col, fn }; listeners.push(l);

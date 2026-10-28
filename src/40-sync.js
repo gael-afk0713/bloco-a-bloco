@@ -119,6 +119,8 @@ function onRemoteScripts(changes) {
 function applyRemote() {
   if (!remoteQueue.length) return;
   if (busyEditing()) { setTimeout(applyRemote, 250); return; }
+  // Salva antes o que eu mudei e ainda não foi salvo; senão o cache abaixo marcaria como salvo
+  clearTimeout(diffTimer); diffWorkspace();
   applying = true;
   Blockly.Events.disable();
   try {

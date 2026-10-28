@@ -6,7 +6,16 @@ $("#stopBtn").onclick = () => stopAll();
 $("#stepBtn").onclick = () => { stepToken++; };
 $("#speedSel").onchange = () => { if ($("#speedSel").value === "normal") { ws.highlightBlock(null); $("#stepBtn").hidden = true; } };
 $("#turboChk").onchange = e => { rt.turbo = e.target.checked; };
-$("#simpleChk").onchange = () => { ws.updateToolbox(buildToolbox()); try { localStorage.setItem("bab-simples", $("#simpleChk").checked ? "1" : "0"); } catch (_) {} };
+function setLevel(n, quiet) {
+  $("#levelSel").value = String(n);
+  const lv = curLevel();
+  document.body.dataset.level = lv.n;
+  ws.updateToolbox(buildToolbox()); try { ws.getToolbox()?.refreshSelection?.(); } catch (_) {}
+  try { localStorage.setItem("bab-nivel", String(lv.n)); } catch (_) {}
+  if (!quiet) narrate(`${lv.name}: ${lv.about}${lv.n ? " Você pode trocar de nível quando quiser." : ""}`);
+  renderLesson();
+}
+$("#levelSel").onchange = () => setLevel($("#levelSel").value);
 $("#tipsChk").onchange = () => { ws.updateToolbox(buildToolbox()); try { localStorage.setItem("bab-dicas", $("#tipsChk").checked ? "1" : "0"); } catch (_) {} };
 $("#projTitle").addEventListener("change", e => updateMeta({ title: e.target.value.trim() || "Meu projeto" }));
 $("#playerBtn").onclick = () => { document.body.classList.toggle("player"); $("#playerBtn").classList.toggle("on", document.body.classList.contains("player")); lastMonHTML = ""; setTimeout(() => { Blockly.svgResize(ws); renderMonitors(); }, 50); };
@@ -16,7 +25,8 @@ document.addEventListener("fullscreenchange", () => { lastMonHTML = ""; setTimeo
 // =====================================================================
 // Lições guiadas (cada passo é conferido automaticamente)
 // =====================================================================
-const scriptsAll = () => [...project.scripts.values()].filter(s => s.block);
+let checkScope = null; // quando definido, as conferências olham só os scripts deste ator
+const scriptsAll = () => [...project.scripts.values()].filter(s => s.block && (!checkScope || s.sprite === checkScope));
 function findType(b, type) { if (!b) return false; if (b.type === type || (type.endsWith("*") && b.type.startsWith(type.slice(0, -1)))) return true; for (const i in (b.inputs || {})) if (findType(b.inputs[i].block, type)) return true; return findType(b.next?.block, type); }
 const has = type => scriptsAll().some(s => findType(s.block, type));
 const inside = (outer, inner) => scriptsAll().some(s => { const walk = b => { if (!b) return false; if (b.type === outer && (findType(b.inputs?.SUBSTACK?.block, inner) || findType(b.inputs?.SUBSTACK2?.block, inner))) return true; for (const i in (b.inputs || {})) if (walk(b.inputs[i].block)) return true; return walk(b.next?.block); }; return walk(s.block); });
@@ -74,13 +84,14 @@ function renderLesson() {
   const L = LESSONS[lessonIdx];
   const res = L.steps.map(([, f]) => { try { return !!f(); } catch (_) { return false; } });
   const done = res.every(Boolean);
-  $("#helpLesson").innerHTML = `<div class="lesson"><span class="label">Lição ${lessonIdx + 1} de ${LESSONS.length}</span><h3>${esc(L.title.replace(/^\d+\.\s*/, ""))}</h3><p class="muted" style="margin:0">${esc(L.intro)}</p>
+  $("#helpLesson").innerHTML = missionListHTML() + `<div class="lesson"><span class="label">Lição em texto ${lessonIdx + 1} de ${LESSONS.length}</span><h3>${esc(L.title.replace(/^\d+\.\s*/, ""))}</h3><p class="muted" style="margin:0">${esc(L.intro)}</p>
     <ol>${L.steps.map(([t], i) => `<li class="${res[i] ? "ok" : ""}"><span class="ck">${res[i] ? "✓" : i + 1}</span><span>${esc(t)}</span></li>`).join("")}</ol>
     ${done ? `<p style="margin:0 0 8px"><strong>Lição completa!</strong> ${lessonIdx < LESSONS.length - 1 ? "Siga para a próxima quando quiser." : "Agora é com você: crie o que quiser."}</p>` : ""}
     <div class="lesson-nav"><button class="btn small" id="lPrev" ${lessonIdx === 0 ? "disabled" : ""} aria-label="Lição anterior">◂</button>
       <select id="lSel" aria-label="Escolher lição">${LESSONS.map((l, i) => `<option value="${i}" ${i === lessonIdx ? "selected" : ""}>${esc(l.title)}</option>`).join("")}</select>
       <button class="btn small ${done ? "primary" : ""}" id="lNext" ${lessonIdx === LESSONS.length - 1 ? "disabled" : ""} aria-label="Próxima lição">▸</button></div></div>`;
   const go = i => { lessonIdx = Math.max(0, Math.min(LESSONS.length - 1, i)); try { localStorage.setItem("bab-licao", lessonIdx); } catch (_) {} renderLesson(); };
+  bindMissionList($("#helpLesson"));
   $("#lPrev").onclick = () => go(lessonIdx - 1); $("#lNext").onclick = () => go(lessonIdx + 1); $("#lSel").onchange = e => go(+e.target.value);
 }
 function onRunEnded() { renderMonitors(); updateLessons(); }
@@ -143,13 +154,15 @@ async function renderPeople() {
   const seen = new Set(), list = viewers.filter(p => { const k = (p.by || p.peer) + (p.isMe ? "me" : ""); if (seen.has(k)) return false; seen.add(k); return true; });
   box.textContent = "";
   const chip = document.createElement("span"); chip.className = "mode-chip";
-  chip.textContent = db?.local ? (IN_CLAUDE ? "Modo individual" : "Salvo neste navegador") : list.length > 1 ? `${list.length} pessoas no projeto` : "Projeto compartilhado";
+  chip.textContent = db?.net ? `Sala ${db.code}${list.length > 1 ? ` · ${list.length} pessoas` : ""}` : db?.local ? (IN_CLAUDE ? "Modo individual" : "Salvo neste navegador") : list.length > 1 ? `${list.length} pessoas no projeto` : "Projeto compartilhado";
   box.append(chip);
   for (const p of list) {
     const pid = p.by || p.presence?.uid, prof = pid ? profiles[pid] : null;
     const el = document.createElement("span"); el.className = "person"; el.style.setProperty("--pc", p.presence?.color || prof?.color || "var(--line)");
-    const img = document.createElement("img"); img.alt = ""; if (prof?.avatarUrl) img.src = prof.avatarUrl;
-    const nm = document.createElement("span"); nm.textContent = p.isMe ? "Você" : (prof?.name || "Colega");
+    let img;
+    if (prof?.avatarUrl) { img = document.createElement("img"); img.alt = ""; img.src = prof.avatarUrl; }
+    else { img = document.createElement("b"); img.className = "pdot"; img.textContent = ((p.isMe ? rt.username : p.presence?.name) || "?").trim().charAt(0).toUpperCase(); }
+    const nm = document.createElement("span"); nm.textContent = p.isMe ? "Você" : (prof?.name || p.presence?.name || "Colega");
     el.append(img, nm);
     if (!p.isMe && p.presence?.sprite) { const s = document.createElement("small"); s.textContent = "· " + (p.presence.sprite === STAGE ? "Palco" : (project.sprites.get(p.presence.sprite)?.name || "")); el.append(s); }
     box.append(el);
@@ -166,7 +179,7 @@ $("#blocklyDiv").addEventListener("pointermove", e => {
   room.presence({ cur: { x: Math.round((e.clientX - p.left - o.x) / ws.scale), y: Math.round((e.clientY - p.top - o.y) / ws.scale) } }).catch(() => {});
 });
 $("#blocklyDiv").addEventListener("pointerleave", () => room?.presence({ cur: null }).catch(() => {}));
-const personName = p => p.isMe ? "Você" : (profiles[p.by || p.presence?.uid]?.name || "Colega");
+const personName = p => p.isMe ? "Você" : (profiles[p.by || p.presence?.uid]?.name || p.presence?.name || "Colega");
 function renderCursors() {
   if ($("#paneCode").hidden) return;
   const o = wsOrigin(), s = ws.scale, seen = new Set();
@@ -237,7 +250,8 @@ let starterDone = false, gotMeta = false, gotSprites = false;
 function maybeStarter() {
   if (starterDone || !gotMeta || !gotSprites) return;
   starterDone = true;
-  if (db.local && !spriteList().length && !live(project.meta.backdrops).length) loadProjectData(starterData(), true);
+  if (db.net && !db.canStart()) { starterDone = false; return; } // espera receber o projeto da sala
+  if ((db.local || db.net) && !spriteList().length && !live(project.meta.backdrops).length) loadProjectData(starterData(), true);
   if (!curSid) selectSprite(spriteList()[0]?.[0] || STAGE);
 }
 async function connect() {
@@ -248,6 +262,19 @@ async function connect() {
   if (user) {
     try { me = await user.me(); rt.username = me?.name || ""; } catch (_) {}
     try { if (await user.can("data.write") === false) { readOnly = true; showBanner("Você está vendo este projeto, mas não pode editar. Peça acesso de Colaborador para programar junto."); } } catch (_) {}
+  }
+  const sala = !IN_CLAUDE && myRoom();
+  if (sala && !db) {
+    // Sala por código (site): projeto e presença passam pelo servidor público, cifrados
+    const me = { id: uid(), name: myName() || "Colega", color: PEER_COLORS[Math.floor(Math.random() * PEER_COLORS.length)] };
+    rt.username = me.name;
+    try {
+      const net = await makeNetRoom(sala, me);
+      db = net.db; room = net.room;
+      $("#people").firstElementChild.textContent = "Conectando à sala " + sala + "…";
+      await net.ready;
+      db.whenSettled.then(() => maybeStarter());
+    } catch (e) { console.error(e); showBanner("Não consegui abrir a sala neste navegador. Abri o seu projeto pessoal."); db = null; room = null; }
   }
   if (!db) db = makeLocalDB();
   db.doc("proj/meta").onSnapshot(s => { gotMeta = true; applyMeta(s); }, () => showBanner("Perdi a conexão com o projeto. Recarregue a página."));
@@ -264,7 +291,7 @@ async function connect() {
     room.on("run", m => { if (!m.sameTab && $("#syncChk").checked) { greenFlag(true); narrate("Um colega clicou em ▶. Rodando junto."); } });
     room.on("stop", m => { if (!m.sameTab && $("#syncChk").checked) stopAll(false, true); });
     room.on("chat", m => {
-      const nm = m.isMe ? "Você" : (m.by && profiles[m.by]?.name) || "Colega";
+      const nm = m.isMe ? "Você" : (m.by && profiles[m.by]?.name) || m.name || "Colega";
       addMsg("#chatLog", nm, String(m.data?.text ?? "").slice(0, 300), m.isMe);
       if (!m.isMe && $("#helpChat").hidden) { unread++; $("#chatTab").textContent = `Conversa (${unread})`; }
     });

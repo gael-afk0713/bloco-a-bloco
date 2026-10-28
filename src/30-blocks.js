@@ -304,16 +304,26 @@ function toolboxBlock(type, fields) {
   });
   return { kind: "block", type, ...(Object.keys(inputs).length ? { inputs } : {}), ...(fields ? { fields } : {}) };
 }
+// Níveis: cada um mostra só os blocos que dá para entender naquele momento. "0" desliga os níveis (todos os blocos).
+const LEVEL1 = ["ev_flag", "ev_key", "ev_click", "mv_move", "mv_turnr", "mv_turnl", "mv_changex", "mv_changey", "mv_gotoxy", "mv_goto", "mv_bounce", "lk_sayfor", "lk_say", "lk_nextcostume", "lk_show", "lk_hide", "snd_play", "ct_wait", "ct_repeat", "ct_forever"];
+const LEVEL2 = [...LEVEL1, "ev_receive", "ev_broadcast", "ev_stageclick", "mv_setx", "mv_sety", "mv_pointdir", "mv_pointto", "mv_glideto", "mv_glide", "mv_rotstyle", "mv_x", "mv_y", "lk_thinkfor", "lk_costume", "lk_backdrop", "lk_nextbackdrop", "lk_changesize", "lk_setsize", "snd_playwait", "snd_stop", "ct_if", "ct_ifelse", "ct_stop", "sn_touching", "sn_keypressed", "sn_mousedown", "op_random", "var_get", "var_set", "var_change", "var_show", "var_hide"];
+const LEVELS = [
+  { n: 1, name: "Nível 1 · Primeiros passos", about: "Só os blocos para fazer o ator andar, falar e repetir.", ok: t => LEVEL1.includes(t) },
+  { n: 2, name: "Nível 2 · Jogos", about: "Chegam o “se”, “tocando em”, as teclas e a pontuação.", ok: t => LEVEL2.includes(t) },
+  { n: 3, name: "Nível 3 · Mais ideias", about: "Quase tudo: operadores, clones, perguntas, caneta e Meus Blocos.", ok: t => !DEF[t].adv && !["list", "tts", "jg", "mu"].includes(DEF[t].cat) },
+  { n: 0, name: "Sem níveis (todos os blocos)", about: "Todos os blocos, como no Scratch, mais os extras.", ok: () => true },
+];
+const curLevel = () => LEVELS.find(l => String(l.n) === $("#levelSel")?.value) || LEVELS[3];
 function buildToolbox() {
-  const simple = $("#simpleChk").checked, stage = curSid === STAGE;
+  const lv = curLevel(), stage = curSid === STAGE;
   const contents = [];
   for (const [cat, [name]] of Object.entries(CAT)) {
-    if (simple && ["list", "tts", "jg", "mu"].includes(cat)) continue;
-    const ok = t => DEF[t].cat === cat && !DEF[t].hidden && !(simple && DEF[t].adv) && !(stage && !DEF[t].stageOk) && !(!stage && !DEF[t].spriteOk);
+    if (cat === "proc" && (lv.n === 1 || lv.n === 2)) continue;
+    const ok = t => DEF[t].cat === cat && !DEF[t].hidden && lv.ok(t) && !(stage && !DEF[t].stageOk) && !(!stage && !DEF[t].spriteOk);
     const items = [];
-    if (cat === "var") items.push({ kind: "button", text: "Criar uma variável", callbackKey: "NEW_VAR" });
-    if (cat === "list") items.push({ kind: "button", text: "Criar uma lista", callbackKey: "NEW_LIST" });
-    if (cat === "ev") items.push({ kind: "button", text: "Criar uma mensagem", callbackKey: "NEW_MSG" });
+    if (cat === "var" && lv.ok("var_set")) items.push({ kind: "button", text: "Criar uma variável", callbackKey: "NEW_VAR" });
+    if (cat === "list" && lv.ok("list_add")) items.push({ kind: "button", text: "Criar uma lista", callbackKey: "NEW_LIST" });
+    if (cat === "ev" && lv.ok("ev_broadcast")) items.push({ kind: "button", text: "Criar uma mensagem", callbackKey: "NEW_MSG" });
     if (cat === "proc") {
       items.push({ kind: "button", text: "Criar um bloco", callbackKey: "NEW_PROC" });
       for (const [pid] of procsOf(curSid)) if (DEF["pc_" + pid]) items.push(toolboxBlock("pc_" + pid));
@@ -347,10 +357,18 @@ function makeTheme(dark) {
   });
 }
 const isDark = () => { const t = document.documentElement.getAttribute("data-theme"); return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
-try { $("#simpleChk").checked = localStorage.getItem("bab-simples") === "1"; $("#tipsChk").checked = localStorage.getItem("bab-dicas") !== "0"; } catch (_) {}
+$("#levelSel").innerHTML = LEVELS.map(l => `<option value="${l.n}">${esc(l.name)}</option>`).join("");
+try {
+  // Quem já usava o Bloco a Bloco continua vendo tudo; quem chega agora começa no Nível 1
+  let lv = localStorage.getItem("bab-nivel");
+  if (lv === null) lv = localStorage.getItem("bab-simples") === "1" ? "3" : localStorage.getItem("bab-projeto-v3") ? "0" : "1";
+  $("#levelSel").value = lv;
+  $("#tipsChk").checked = localStorage.getItem("bab-dicas") !== "0";
+} catch (_) { $("#levelSel").value = "1"; }
+document.body.dataset.level = curLevel().n;
 const ws = Blockly.inject("blocklyDiv", {
   toolbox: buildToolbox(), renderer: "zelos", theme: makeTheme(isDark()), trashcan: false, sounds: false,
-  zoom: { controls: false, wheel: true, startScale: .7, maxScale: 2, minScale: .3 },
+  zoom: { controls: false, wheel: true, startScale: [1, 2].includes(curLevel().n) ? .85 : .7, maxScale: 2, minScale: .3 },
   move: { scrollbars: true, drag: true, wheel: true }, grid: { spacing: 40, length: 2, colour: "#cfd8e2", snap: false },
 });
 const refreshTheme = () => ws.setTheme(makeTheme(isDark()));
