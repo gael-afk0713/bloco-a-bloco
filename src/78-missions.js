@@ -43,7 +43,9 @@ const TEMPLATES = {
       ["Faísca", ["robo-a", "robo-b"], { x: 0, y: -90, size: 70 }, [
         chain(tb("ev_flag"), tb("mv_gotoxy", { X: 0, Y: -90 }), tb("ct_forever", { SUBSTACK: chain(
           tb("ct_if", { COND: tb("sn_keypressed", { KEY: "right" }), SUBSTACK: tb("mv_changex", { DX: 10 }) }),
-          tb("ct_if", { COND: tb("sn_keypressed", { KEY: "left" }), SUBSTACK: tb("mv_changex", { DX: -10 }) })) }))]],
+          tb("ct_if", { COND: tb("sn_keypressed", { KEY: "left" }), SUBSTACK: tb("mv_changex", { DX: -10 }) }),
+          tb("ct_if", { COND: tb("sn_keypressed", { KEY: "up" }), SUBSTACK: tb("mv_changey", { DY: 10 }) }),
+          tb("ct_if", { COND: tb("sn_keypressed", { KEY: "down" }), SUBSTACK: tb("mv_changey", { DY: -10 }) })) }))]],
       ["Estrela", ["estrela"], { x: 120, y: 60, size: 70 }, [
         chain(tb("ev_flag"), tb("var_set", { VAR: "pontos", VALUE: "0" }), tb("mv_goto", { TO: "_random_" }), tb("ct_forever", { SUBSTACK:
           tb("ct_if", { COND: tb("sn_touching", { OBJ: "Faísca" }) }) }))]],
@@ -63,20 +65,20 @@ const MISSIONS = [
   { id: "falar", level: 1, title: "Faça o Faísca falar", intro: "Seu primeiro programa: quando clicar na bandeira, o personagem diz Olá.", steps: [
     pickSprite,
     { say: "Clique em Eventos, a categoria amarela.", point: { cat: "ev" }, done: () => openCat() === "ev" || has("ev_flag") },
-    { say: "Arraste o bloco “quando ▶ for clicado” para o espaço branco.", point: { drag: "ev_flag" }, done: () => has("ev_flag") },
+    { say: "Arraste o bloco “quando ▶ for clicado” para a área de código, à direita.", point: { drag: "ev_flag" }, done: () => has("ev_flag") },
     { say: "Agora clique em Aparência, a categoria roxa.", point: { cat: "lk" }, done: () => openCat() === "lk" || underHat("ev_flag", "lk_sayfor") },
     { say: "Arraste “dizer Olá! por 2 segundos” e solte embaixo do bloco amarelo. Ele gruda sozinho!", point: { drag: "lk_sayfor", to: "ev_flag" }, done: () => underHat("ev_flag", "lk_sayfor") },
     flagStep("Clique na bandeira verde ▶ e veja o personagem falar!")] },
   { id: "andar", level: 1, title: "Ande sem parar", intro: "O bloco “sempre” repete o que está dentro dele até você clicar em ■.", steps: [
     pickSprite,
-    { say: "Coloque “quando ▶ for clicado” (Eventos, amarelo) no espaço branco.", point: { drag: "ev_flag" }, done: () => has("ev_flag") },
+    { say: "Coloque “quando ▶ for clicado” (Eventos, amarelo) na área de código.", point: { drag: "ev_flag" }, done: () => has("ev_flag") },
     { say: "Em Controle (laranja), arraste “sempre” e encaixe embaixo do bloco amarelo.", point: { drag: "ct_forever", to: "ev_flag" }, done: () => underHat("ev_flag", "ct_forever") },
     { say: "Em Movimento (azul), arraste “mover 10 passos” para DENTRO da boca do “sempre”.", point: { drag: "mv_move", into: "ct_forever" }, done: () => inside("ct_forever", "mv_move") },
     { say: "Coloque também “se tocar na borda, volte” dentro do “sempre”. Assim ele não some da tela.", point: { drag: "mv_bounce", into: "ct_forever" }, done: () => inside("ct_forever", "mv_bounce") },
     flagStep("Clique em ▶. Para parar, clique no ■.")] },
   { id: "animar", level: 1, title: "Dê vida ao personagem", intro: "Trocar de fantasia bem rápido parece que o personagem está se mexendo, como num desenho animado.", steps: [
     pickSprite,
-    { say: "Coloque “quando ▶ for clicado” (Eventos) no espaço branco.", point: { drag: "ev_flag" }, done: () => has("ev_flag") },
+    { say: "Coloque “quando ▶ for clicado” (Eventos) na área de código.", point: { drag: "ev_flag" }, done: () => has("ev_flag") },
     { say: "Em Controle, encaixe “sempre” embaixo dele.", point: { drag: "ct_forever", to: "ev_flag" }, done: () => underHat("ev_flag", "ct_forever") },
     { say: "Em Aparência, arraste “próxima fantasia” para dentro do “sempre”.", point: { drag: "lk_nextcostume", into: "ct_forever" }, done: () => inside("ct_forever", "lk_nextcostume") },
     { say: "Em Controle, coloque “esperar 1 segundos” dentro do “sempre” também.", point: { drag: "ct_wait", into: "ct_forever" }, done: () => inside("ct_forever", "ct_wait") },
@@ -92,11 +94,12 @@ const MISSIONS = [
     { say: "Encaixe “mudar x por 10” embaixo dele.", point: { drag: "mv_changex", to: b => b.type === "ev_key" && b.getFieldValue("KEY") === "left" }, done: () => hasWith("ev_key", b => b.fields?.KEY === "left" && b.next?.block?.type === "mv_changex") },
     { say: "Para ir para a esquerda o número é negativo: troque 10 por -10.", point: { num: [b => b.type === "mv_changex" && b.getPreviousBlock()?.getFieldValue?.("KEY") === "left", "DX"] }, done: () => hasWith("ev_key", b => b.fields?.KEY === "left" && numIn(b.next?.block, "DX") < 0) },
     { say: "Clique no palco e aperte as setas → e ←.", point: { stage: true }, fresh: "key", done: () => lessonRan.key }] },
-  { id: "estrela", level: 2, template: "estrela", title: "Complete o jogo: Pegue a estrela", intro: "Este jogo está quase pronto. O Faísca já anda com as setas; falta a estrela reagir quando é pega.", steps: [
+  { id: "estrela", level: 2, template: "estrela", title: "Complete o jogo: Pegue a estrela", intro: "Este jogo está quase pronto. O Faísca já anda com as setas ← → ↑ ↓; falta a estrela reagir quando é pega.", steps: [
     { say: "Clique na Estrela na lista de Atores para ver os blocos dela.", point: { sprite: "Estrela" }, done: () => curDoc()?.name === "Estrela" || inSprite("Estrela", () => inside("ct_if", "mv_goto")) },
     { say: "O “se tocando em Faísca? então” está vazio. Em Movimento, arraste “ir para posição aleatória” para dentro dele.", point: { drag: "mv_goto", into: "ct_if" }, done: () => inSprite("Estrela", () => inside("ct_if", "mv_goto")) },
     { say: "Em Variáveis, arraste “adicionar 1 a pontos” para dentro do “se” também.", point: { drag: "var_change", into: "ct_if" }, done: () => inSprite("Estrela", () => inside("ct_if", "var_change")) },
-    flagStep("Clique em ▶ e pegue a estrela com as setas ← →!")] },
+    flagStep("Clique em ▶ para começar o jogo."),
+    { say: "Agora pegue a estrela! Clique no palco e use as setas ← → ↑ ↓ até o Faísca encostar nela.", point: { stage: true }, done: () => lessonRan.flag && Number(rt.vars.get("pontos")) >= 1 }] },
   { id: "fantasma", level: 2, template: "fantasma", title: "Complete o jogo: Fuja do fantasma", intro: "O Faísca segue o mouse e o fantasma persegue o Faísca. Falta o jogo acabar quando o fantasma pega ele.", steps: [
     { say: "Clique no Faísca na lista de Atores.", point: { sprite: "Faísca" }, done: () => curDoc()?.name === "Faísca" || inSprite("Faísca", () => inside("ct_forever", "ct_if")) },
     { say: "Em Controle, arraste “se … então” para dentro do “sempre”, embaixo do “ir para ponteiro do mouse”.", point: { drag: "ct_if", into: "ct_forever" }, done: () => inSprite("Faísca", () => inside("ct_forever", "ct_if")) },
@@ -123,6 +126,7 @@ function startMission(m) {
   const lv = curLevel().n;
   if (lv !== 0 && lv < m.level) setLevel(m.level, true);
   document.querySelector('#editorCard [data-tab="code"]')?.click();
+  if (scrollY > 0) scrollTo({ top: 0, behavior: "smooth" }); // a lista de missões fica lá embaixo; a missão acontece em cima
   const card = document.createElement("div"); card.className = "mission"; card.setAttribute("role", "status");
   $("#paneCode").append(card);
   const hand = document.createElement("div"); hand.className = "hand"; hand.innerHTML = `<svg viewBox="0 0 46 52" width="46" height="52" aria-hidden="true"><path d="M14 3c2.6 0 4.5 2 4.5 4.6V22l2-.4c2.2-.4 4 1 4.4 3l.1.6 1.6-.3c2.2-.3 4 1.1 4.4 3.1l1.3-.2c2.3-.3 4.3 1.3 4.6 3.6.8 6.4-.1 11.3-2.6 14.6-2.2 2.9-5.5 4.5-9.7 4.5h-4.4c-3.6 0-6.6-1.6-8.8-4.6L3.7 34.6c-1.4-2-.9-4.6 1.1-6 1.8-1.2 4.2-.9 5.6.7l-.1-21.7C10.3 5 11.6 3 14 3z" fill="#ffd9b0" stroke="#5a3b1c" stroke-width="2.4" stroke-linejoin="round"/></svg>`;
@@ -151,26 +155,33 @@ function checkMission() {
     const s = m.steps[idx];
     if (s.fresh === "flag" && mission.idx !== idx) lessonRan.flag = false;
     if (s.fresh === "key" && mission.idx !== idx) lessonRan.key = false;
+    if (mission.base === undefined || idx < mission.base) mission.base = idx;
     mission.idx = idx; mission.t0 = now();
     renderMissionCard(st);
   }
 }
 function renderMissionCard(st) {
-  const { m, idx, card } = mission, s = m.steps[idx];
+  const { m, idx, card, base } = mission, s = m.steps[idx];
   const face = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(LIB["robo-a"].svg)}`;
   card.classList.remove("done");
-  card.innerHTML = `<div class="m-top"><img alt="" src="${face}"><div><span class="label">Missão · passo ${idx + 1} de ${m.steps.length}</span><div style="font-weight:700">${esc(m.title)}</div></div></div>
-    ${idx === 0 && mission.firstShown !== true ? `<p class="muted" style="margin:0">${esc(m.intro)}</p>` : ""}
+  card.innerHTML = `<div class="m-top"><img alt="" src="${face}"><div><span class="label">Missão · passo ${idx - base + 1} de ${m.steps.length - base}</span><div style="font-weight:700">${esc(m.title)}</div></div></div>
+    ${mission.firstShown !== true ? `<p class="muted" style="margin:0">${esc(m.intro)}</p>` : ""}
     <p class="m-step">${esc(s.say)}</p>
-    <div class="m-dots">${m.steps.map((_, i) => `<i class="${st[i] ? "ok" : i === idx ? "now" : ""}"></i>`).join("")}</div>
+    <div class="m-dots">${m.steps.slice(base).map((_, j) => `<i class="${st[j + base] ? "ok" : j + base === idx ? "now" : ""}"></i>`).join("")}</div>
     <div class="m-row"><button class="btn small" data-m="ouvir">🔊 Ouvir</button><button class="btn small" data-m="mini">Esconder</button><button class="btn small" data-m="sair">Sair da missão</button></div>`;
   mission.firstShown = true;
-  card.querySelector('[data-m="ouvir"]').onclick = () => sayAloud(s.say);
+  card.querySelector('[data-m="ouvir"]').onclick = e => sayAloud(s.say, e.currentTarget);
   card.querySelector('[data-m="mini"]').onclick = () => { card.classList.toggle("min"); card.querySelector('[data-m="mini"]').textContent = card.classList.contains("min") ? "Mostrar" : "Esconder"; };
   card.querySelector('[data-m="sair"]').onclick = () => stopMission();
 }
-function sayAloud(text) {
-  try { const u = new SpeechSynthesisUtterance(text.replace(/[“”]/g, "")); u.lang = "pt-BR"; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (_) {}
+function sayAloud(text, btn) {
+  const label = t => { if (btn) btn.textContent = t; };
+  if (!window.speechSynthesis) { label("🔇 Sem voz aqui"); return; }
+  try {
+    const u = new SpeechSynthesisUtterance(text.replace(/[“”]/g, "")); u.lang = "pt-BR";
+    u.onstart = () => label("🔊 Falando…"); u.onend = u.onerror = () => label("🔊 Ouvir");
+    speechSynthesis.cancel(); speechSynthesis.speak(u); label("🔊 Falando…");
+  } catch (_) { label("🔇 Sem voz aqui"); }
 }
 function finishMission() {
   const { m, card } = mission;

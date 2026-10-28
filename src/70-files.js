@@ -1,10 +1,14 @@
 // =====================================================================
 // Janelas, arquivos, pintura
 // =====================================================================
+let modalKeys = null; // Esc fecha a janela aberta
 function modal(html, onMount) {
   const root = $("#modalRoot");
   root.innerHTML = `<div class="overlay" role="dialog" aria-modal="true"><div class="modal">${html}</div></div>`;
-  const close = () => { root.innerHTML = ""; };
+  const close = () => { root.innerHTML = ""; document.removeEventListener("keydown", modalKeys); modalKeys = null; };
+  document.removeEventListener("keydown", modalKeys);
+  modalKeys = e => { if (e.key === "Escape") close(); };
+  document.addEventListener("keydown", modalKeys);
   root.querySelector(".overlay").addEventListener("click", e => { if (e.target.classList.contains("overlay")) close(); });
   root.querySelectorAll("[data-close]").forEach(b => b.onclick = close);
   onMount?.(root.querySelector(".modal"), close);

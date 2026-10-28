@@ -59,6 +59,7 @@ function openRoomBox(prefill) {
       try {
         if ($("#rmBring").checked) { if (curSid) diffWorkspace(); localStorage.setItem("bab-sala-" + c, JSON.stringify(db?._all?.() || {})); }
         localStorage.setItem("bab-sala", c);
+        sessionStorage.setItem("bab-sala-nova", c);
       } catch (_) { err("O navegador não tem espaço para copiar este projeto. Desmarque “Levar o projeto” ou apague imagens grandes."); return; }
       goRoom(c);
     };
@@ -67,3 +68,12 @@ function openRoomBox(prefill) {
 }
 $("#roomBtn").onclick = () => openRoomBox();
 if (pendingRoom) setTimeout(() => openRoomBox(pendingRoom), 400);
+// Quem acabou de criar a sala vê o código grande assim que ela conecta, para passar aos colegas
+try {
+  const nova = sessionStorage.getItem("bab-sala-nova");
+  if (nova) {
+    sessionStorage.removeItem("bab-sala-nova");
+    const wait = setInterval(() => { if (db?.net && db.code === nova) { clearInterval(wait); openRoomBox(); } }, 300);
+    setTimeout(() => clearInterval(wait), 20000);
+  }
+} catch (_) {}

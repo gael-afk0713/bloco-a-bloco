@@ -314,6 +314,8 @@ const LEVELS = [
   { n: 0, name: "Sem níveis (todos os blocos)", about: "Todos os blocos, como no Scratch, mais os extras.", ok: () => true },
 ];
 const curLevel = () => LEVELS.find(l => String(l.n) === $("#levelSel")?.value) || LEVELS[3];
+// Com a área de código estreita, descrições mais curtas para a paleta aberta não cobrir os blocos
+const tipMax = () => { const w = $("#blocklyDiv")?.clientWidth || innerWidth; return w < 700 ? 30 : w < 1000 ? 40 : 62; };
 function buildToolbox() {
   const lv = curLevel(), stage = curSid === STAGE;
   const contents = [];
@@ -336,8 +338,18 @@ function buildToolbox() {
     const blocks = Object.keys(DEF).filter(ok);
     if (!blocks.length && !items.length) continue;
     const tips = $("#tipsChk")?.checked !== false;
-    const withTips = blocks.flatMap(t => tips ? [toolboxBlock(t), { kind: "label", text: shortTip(DEF[t].tip), "web-class": "bab-tip" }] : [toolboxBlock(t)]);
+    const withTips = blocks.flatMap(t => tips ? [toolboxBlock(t), { kind: "label", text: shortTip(DEF[t].tip, tipMax()), "web-class": "bab-tip" }] : [toolboxBlock(t)]);
     contents.push({ kind: "category", name, categorystyle: cat + "_category", contents: [...items, ...withTips] });
+  }
+  // Os níveis escondem blocos; esta categoria avisa que existem mais e sobe de nível com um clique
+  const next = { 1: 2, 2: 3, 3: 0 }[lv.n];
+  if (next !== undefined) {
+    const nl = LEVELS.find(l => l.n === next);
+    contents.push({ kind: "category", name: "Mais blocos", colour: "#8a96a3", contents: [
+      { kind: "label", text: `Você está no ${lv.name.split(" · ")[0]}.`, "web-class": "bab-tip" },
+      { kind: "label", text: next ? nl.about : "Ver todos os blocos, como no Scratch.", "web-class": "bab-tip" },
+      { kind: "button", text: next ? `Subir para o ${nl.name.split(" · ")[0]}` : "Mostrar todos os blocos", callbackKey: "LEVEL_UP" },
+    ] });
   }
   return { kind: "categoryToolbox", contents };
 }
@@ -361,7 +373,11 @@ $("#levelSel").innerHTML = LEVELS.map(l => `<option value="${l.n}">${esc(l.name)
 try {
   // Quem já usava o Bloco a Bloco continua vendo tudo; quem chega agora começa no Nível 1
   let lv = localStorage.getItem("bab-nivel");
-  if (lv === null) lv = localStorage.getItem("bab-simples") === "1" ? "3" : localStorage.getItem("bab-projeto-v3") ? "0" : "1";
+  if (lv === null) {
+    lv = localStorage.getItem("bab-simples") === "1" ? "3" : localStorage.getItem("bab-projeto-v3") ? "0" : "1";
+    // Grava já: senão, ao recarregar, o projeto salvo faria o nível virar “Sem níveis”
+    localStorage.setItem("bab-nivel", lv);
+  }
   $("#levelSel").value = lv;
   $("#tipsChk").checked = localStorage.getItem("bab-dicas") !== "0";
 } catch (_) { $("#levelSel").value = "1"; }
@@ -374,7 +390,8 @@ const ws = Blockly.inject("blocklyDiv", {
 const refreshTheme = () => ws.setTheme(makeTheme(isDark()));
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", refreshTheme);
 new MutationObserver(refreshTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-new ResizeObserver(() => Blockly.svgResize(ws)).observe($("#blocklyDiv"));
+let lastTipMax = tipMax();
+new ResizeObserver(() => { Blockly.svgResize(ws); if (tipMax() !== lastTipMax) { lastTipMax = tipMax(); refreshToolbox(); } }).observe($("#blocklyDiv"));
 let toolboxTimer = null;
 // Atualiza a caixa de ferramentas e a categoria aberta (para uma variável nova aparecer na hora)
 const refreshToolbox = () => { clearTimeout(toolboxTimer); toolboxTimer = setTimeout(() => { ws.updateToolbox(buildToolbox()); try { ws.getToolbox()?.refreshSelection?.(); } catch (_) {} }, 60); };

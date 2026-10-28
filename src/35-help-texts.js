@@ -151,7 +151,7 @@ const EXAMPLES = {
   jg_distxy: "Ex.: distância até o centro: x 0 y 0.",
 };
 // Primeira frase da dica, para caber embaixo do bloco na paleta
-function shortTip(t) { const s = String(t || "").split(/(?<=\.)\s/)[0].replace(/\s*\(Extra[^)]*\)\s*/, ""); return s.length > 62 ? s.slice(0, 60).trimEnd() + "…" : s; }
+function shortTip(t, max = 62) { const s = String(t || "").split(/(?<=\.)\s/)[0].replace(/\s*\(Extra[^)]*\)\s*/, ""); return s.length > max ? s.slice(0, max - 2).trimEnd() + "…" : s; }
 function showBlockHelp(type) {
   if (!type || !DEF[type]) return;
   const d = DEF[type];

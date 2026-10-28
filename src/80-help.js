@@ -16,6 +16,12 @@ function setLevel(n, quiet) {
   renderLesson();
 }
 $("#levelSel").onchange = () => setLevel($("#levelSel").value);
+// As missões ficam na aba Lições, no fim da coluna da direita: este botão leva até lá
+$("#missionsBtn").onclick = () => {
+  document.querySelector('[data-help="lesson"]')?.click();
+  const box = $("#helpLesson"); box.scrollIntoView({ behavior: "smooth", block: "start" });
+  const list = box.querySelector(".mission-list"); list?.classList.add("bab-flash"); setTimeout(() => list?.classList.remove("bab-flash"), 2600);
+};
 $("#tipsChk").onchange = () => { ws.updateToolbox(buildToolbox()); try { localStorage.setItem("bab-dicas", $("#tipsChk").checked ? "1" : "0"); } catch (_) {} };
 $("#projTitle").addEventListener("change", e => updateMeta({ title: e.target.value.trim() || "Meu projeto" }));
 $("#playerBtn").onclick = () => { document.body.classList.toggle("player"); $("#playerBtn").classList.toggle("on", document.body.classList.contains("player")); lastMonHTML = ""; setTimeout(() => { Blockly.svgResize(ws); renderMonitors(); }, 50); };

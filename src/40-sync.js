@@ -52,6 +52,12 @@ function hookFlyoutHelp() {
   fw.addChangeListener(e => { const id = e.blockId || e.newElementId; if (id && (e.type === Blockly.Events.CLICK || e.type === Blockly.Events.SELECTED)) { const b = fw.getBlockById(id); showBlockHelp((b?.getRootBlock?.() || b)?.type); } });
 }
 hookFlyoutHelp(); setTimeout(hookFlyoutHelp, 500);
+// O Blockly cria uma cópia a cada clique na paleta; aqui o clique só explica o bloco e só arrastar cria
+const blocklyBlockClick = Blockly.Gesture.prototype.doBlockClick;
+Blockly.Gesture.prototype.doBlockClick = function () {
+  if (this.flyout?.autoClose && this.targetBlock) { showBlockHelp((this.targetBlock.getRootBlock?.() || this.targetBlock).type); return; }
+  return blocklyBlockClick.call(this);
+};
 let lastPointer = { x: 0, y: 0 };
 $("#blocklyDiv").addEventListener("pointerdown", e => { lastPointer = { x: e.clientX, y: e.clientY }; }, true);
 ws.addChangeListener(e => {
@@ -62,6 +68,31 @@ ws.addChangeListener(e => {
   if (e.isUiEvent) return;
   scheduleDiff();
 });
+// Bloco solto pertinho de outro quase sempre é um encaixe que não pegou: avisa na hora
+ws.addChangeListener(e => {
+  if (applying || e.type !== Blockly.Events.BLOCK_DRAG || e.isStart) return;
+  setTimeout(() => {
+    const b = ws.getBlockById(e.blockId);
+    if (!b || b.getParent() || !b.previousConnection || b.outputConnection) return;
+    const r = b.getBoundingRectangle(), gap = 36;
+    const near = ws.getTopBlocks(false).some(o => {
+      if (o === b) return false;
+      const q = o.getBoundingRectangle();
+      return q.left - gap < r.right && r.left < q.right + gap && q.top - gap < r.bottom && r.top < q.bottom + gap;
+    });
+    if (near) looseTip(b);
+  }, 30);
+});
+function looseTip(b) {
+  document.querySelector(".loose-tip")?.remove();
+  const root = b.getSvgRoot(), box = root.getBoundingClientRect();
+  root.classList.add("bab-problem"); setTimeout(() => root.classList.remove("bab-problem"), 3000);
+  const tip = document.createElement("div"); tip.className = "loose-tip"; tip.setAttribute("role", "status");
+  tip.textContent = "Este bloco ficou solto! Arraste de novo e solte quando aparecer a sombra cinza: aí ele gruda.";
+  tip.style.left = Math.max(8, Math.min(innerWidth - 268, box.left)) + "px"; tip.style.top = Math.min(innerHeight - 80, box.bottom + 8) + "px";
+  document.body.append(tip); setTimeout(() => tip.remove(), 4500);
+  narrate("Um bloco ficou solto, sem encaixar. Blocos soltos não rodam: arraste até ele grudar no de cima.");
+}
 // Clicar num script roda (ou para) só ele; clicar num bloco de valor mostra o valor
 function clickBlock(id) {
   const b = ws.getBlockById(id); if (!b) return;
@@ -155,6 +186,7 @@ ws.registerButtonCallback("NEW_VAR", () => askName("Nova variável", "Nome da va
 ws.registerButtonCallback("NEW_LIST", () => askName("Nova lista", "Nome da lista", "itens", true, (name, local) => createList(name, local)));
 ws.registerButtonCallback("NEW_MSG", () => askName("Nova mensagem", "Nome da mensagem", "começar", false, name => createMsg(name)));
 ws.registerButtonCallback("NEW_PROC", () => openProcMaker());
+ws.registerButtonCallback("LEVEL_UP", () => { setLevel({ 1: 2, 2: 3, 3: 0 }[curLevel().n] ?? 0); });
 function allVarNames() { return [...live(project.meta.vars).map(([, v]) => v.name), ...spriteList().flatMap(([, s]) => live(s.vars).map(([, v]) => v.name))]; }
 function createVar(name, local) {
   name = name.trim(); if (!name) return;

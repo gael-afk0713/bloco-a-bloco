@@ -115,7 +115,7 @@ cv.addEventListener("pointerdown", e => {
     const t = rt.targets[i];
     if (!t.visible || !pointHits(t, p.x, p.y)) continue;
     const ths = fireFor(t, "ev_click"); if (ths.length) lessonRan.click = true;
-    if ((!t.clone && !rt.running) || t.draggable) { dragState = { t, dx: p.x - t.x, dy: p.y - t.y, moved: false }; cv.setPointerCapture(e.pointerId); }
+    if ((!t.clone && !document.body.classList.contains("player")) || t.draggable) { dragState = { t, dx: p.x - t.x, dy: p.y - t.y, moved: false }; cv.setPointerCapture(e.pointerId); }
     if (!t.clone && !ths.length && t.sid !== curSid && !document.body.classList.contains("player")) selectSprite(t.sid);
     return;
   }
@@ -123,7 +123,7 @@ cv.addEventListener("pointerdown", e => {
 });
 window.addEventListener("pointerup", () => {
   rt.mouse.down = false;
-  if (dragState) { const { t, moved } = dragState; dragState = null; if (moved && !t.clone && !rt.running) { updateSprite(t.sid, { x: Math.round(t.x), y: Math.round(t.y) }); renderProps(); } }
+  if (dragState) { const { t, moved } = dragState; dragState = null; if (moved && !t.clone && !document.body.classList.contains("player")) { updateSprite(t.sid, { x: Math.round(t.x), y: Math.round(t.y) }); renderProps(); } }
 });
 cv.addEventListener("pointerleave", () => { rt.mouse.down = false; });
 const typingTarget = e => e.target.closest && e.target.closest("input, textarea, select, .blocklyHtmlInput, #blocklyDiv, .modal");

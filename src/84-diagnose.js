@@ -37,7 +37,7 @@ function diagnose() {
     walkScript(top, (b, loops) => {
       const tp = b.type;
       if (["ct_if", "ct_ifelse", "ct_waituntil", "ct_repeatuntil", "ct_while"].includes(tp) && !b.inputs?.COND?.block)
-        add("problem", s.sprite, b.id, `${bq(tp)} está sem condição`, `O espaço de seis lados está vazio, então a condição é sempre falsa${tp === "ct_repeatuntil" ? " e o laço nunca termina" : ""}. Arraste para ele um bloco de seis lados, como “tocando em …?” ou “tecla … pressionada?”.`);
+        add("problem", s.sprite, b.id, `${bq(tp)} está sem condição`, `O espaço de seis lados está vazio, então a condição é sempre falsa${tp === "ct_repeatuntil" ? " e o laço nunca termina" : ""}. Arraste para ele um bloco de seis lados, como “tocando em …?” ou “tecla … pressionada?”${curLevel().n === 1 ? " (eles ficam em Sensores, que aparece a partir do Nível 2: troque o nível em cima dos blocos)" : ""}.`);
       if ((tp === "ct_if" || tp === "ct_ifelse") && !loops.length && top.type === "ev_flag" && b.inputs?.COND?.block && [...blocksIn(b.inputs.COND.block)].some(x => ["sn_keypressed", "sn_touching", "sn_mousedown", "sn_touchcolor", "sn_colortouch"].includes(x.type)))
         add("problem", s.sprite, b.id, "Este “se” só confere uma vez", "Ele olha a condição só no instante em que você clica em ▶ e depois não olha mais. Coloque o “se” dentro de um “sempre” para ele ficar conferindo o tempo todo.");
       if (tp === "lk_nextcostume" && loops.length) {
@@ -64,15 +64,20 @@ function diagnose() {
   for (const [sid, sp] of spriteList()) {
     const mine = scripts.filter(s => s.sprite === sid);
     const shows = mine.some(s => [...blocksIn(s.block)].some(b => b.type === "lk_show"));
-    if (sp.visible === false && !shows) add("problem", sid, null, `${sp.name} está escondido`, "Ele não aparece no palco e nenhum bloco “mostrar” deixa ele visível. Use o botão de olho nas configurações do ator, ou coloque “mostrar” no começo do script.");
-    if (Math.abs(sp.x || 0) > 250 || Math.abs(sp.y || 0) > 190) add("problem", sid, null, `${sp.name} está fora do palco`, "A posição dele fica além da borda (o palco vai de x -240 a 240 e de y -180 a 180). Use “ir para x: 0 y: 0” no começo do script.");
-    if ((sp.size ?? 100) < 5) add("problem", sid, null, `${sp.name} está minúsculo`, `O tamanho é ${sp.size}%: quase invisível. Use “definir tamanho como 100 %”.`);
+    if (sp.visible === false && !shows) add("problem", sid, "#pVis", `${sp.name} está escondido`, "Ele não aparece no palco e nenhum bloco “mostrar” deixa ele visível. Marque a caixinha “Aparece no palco” embaixo do palco, ou coloque “mostrar” no começo do script.");
+    if (Math.abs(sp.x || 0) > 250 || Math.abs(sp.y || 0) > 190) add("problem", sid, "#pX", `${sp.name} está fora do palco`, "A posição dele fica além da borda (o palco vai de x -240 a 240 e de y -180 a 180). Use “ir para x: 0 y: 0” no começo do script.");
+    if ((sp.size ?? 100) < 5) add("problem", sid, "#pSize", `${sp.name} está minúsculo`, `O tamanho é ${sp.size}%: quase invisível. Use “definir tamanho como 100 %”.`);
   }
   if (keyHats || scripts.some(s => [...blocksIn(s.block)].some(b => b.type === "sn_keypressed"))) add("tip", null, null, "Usa o teclado? Clique no palco antes", "As teclas só chegam ao jogo depois que você clica uma vez no palco.");
   return out.sort((a, b) => (a.kind === "tip") - (b.kind === "tip"));
 }
 function showProblem(sid, blockId) {
   if (sid && sid !== curSid) selectSprite(sid);
+  if (blockId?.startsWith("#")) {
+    // Problema numa configuração do ator: rola até o campo e faz ele piscar
+    setTimeout(() => { const el = $(blockId); if (!el) return; const box = el.closest(".prop, label") || el; box.scrollIntoView({ block: "center", behavior: "smooth" }); box.classList.add("bab-flash"); setTimeout(() => box.classList.remove("bab-flash"), 2600); el.focus({ preventScroll: true }); }, 120);
+    return;
+  }
   document.querySelector('#editorCard [data-tab="code"]')?.click();
   if (!blockId) return;
   setTimeout(() => {
