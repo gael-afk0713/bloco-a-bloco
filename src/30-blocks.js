@@ -300,7 +300,12 @@ function registerAllProcs() {
 
 // ---------- Caixa de ferramentas e tema ----------
 function argSpecs(type) { return (DEF[type]?.args || []).map(s => s.split(":")); }
+// Como no Scratch, “mudar para a fantasia/o cenário” vem da paleta com o último da lista:
+// com o primeiro (quase sempre o atual), clicar em ▶ não muda nada e parece que o bloco não funciona
+const lastName = list => list.length > 1 ? list.at(-1)[1].name : null;
+const PALETTE_PICK = { lk_costume: () => ({ COSTUME: lastName(costumesOf(curSid)) }), lk_backdrop: () => ({ BACKDROP: lastName(live(project.meta.backdrops)) }), lk_backdropwait: () => ({ BACKDROP: lastName(live(project.meta.backdrops)) }) };
 function toolboxBlock(type, fields) {
+  if (!fields && PALETTE_PICK[type]) { const f = PALETTE_PICK[type](); if (Object.values(f).every(v => v != null)) fields = f; }
   const inputs = {};
   argSpecs(type).forEach(([k, name, d]) => {
     if (k === "N") inputs[name] = { shadow: { type: "b_num", fields: { NUM: d === "" || d === undefined ? 0 : Number(d) } } };

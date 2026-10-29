@@ -15,11 +15,16 @@ function newTarget(sid, d) {
     pen: { down: false, h: 66, s: 100, v: 100, a: 0, size: 1 }, draggable: !!d.draggable, volume: 100, sfx: { pitch: 0, pan: 0 },
     instrument: "1", voice: "ALTO", lang: "pt-br", vx: 0, vy: 0, onGround: false };
 }
+// Só copia para o palco o que mudou no documento do ator (arrastar, painel, colega):
+// assim o que um script fez (fantasia, tamanho, direção…) não volta sozinho depois que ele termina
+const docProps = d => ({ x: d.x || 0, y: d.y || 0, dir: d.dir ?? 90, size: d.size ?? 100, visible: d.visible !== false, rot: d.rot || "all", costume: d.costume || 0, draggable: !!d.draggable });
 function rtEnsure(sid) {
   const d = project.sprites.get(sid); if (!d || d.deleted) return null;
   let t = rt.targets.find(x => x.sid === sid && !x.clone);
+  const props = docProps(d);
   if (!t) { t = newTarget(sid, d); rt.targets.push(t); }
-  else if (!rt.running) Object.assign(t, { x: d.x || 0, y: d.y || 0, dir: d.dir ?? 90, size: d.size ?? 100, visible: d.visible !== false, rot: d.rot || "all", costume: d.costume || 0, draggable: !!d.draggable });
+  else for (const k in props) if (props[k] !== t.docSeen?.[k]) t[k] = props[k];
+  t.docSeen = props;
   const n = costumesOf(sid).length; if (t.costume >= n) t.costume = 0;
   for (const [, v] of live(d.vars)) if (!t.vars.has(v.name)) t.vars.set(v.name, v.value ?? 0);
   for (const [, l] of live(d.lists)) if (!t.lists.has(l.name)) t.lists.set(l.name, [...(l.items || [])]);
