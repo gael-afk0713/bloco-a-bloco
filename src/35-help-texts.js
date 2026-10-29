@@ -152,11 +152,11 @@ const EXAMPLES = {
 };
 // Primeira frase da dica, para caber embaixo do bloco na paleta
 function shortTip(t, max = 62) { const s = String(t || "").split(/(?<=\.)\s/)[0].replace(/\s*\(Extra[^)]*\)\s*/, ""); return s.length > max ? s.slice(0, max - 2).trimEnd() + "…" : s; }
-function showBlockHelp(type) {
+function showBlockHelp(type, json, label) {
   if (!type || !DEF[type]) return;
   const d = DEF[type];
   const cat = CAT[d.cat]?.[0] || "";
-  const name = type.startsWith("pc_") || type.startsWith("pd_") ? "seu bloco" : `“${blockText({ type, fields: {}, inputs: {} }).replace(/\(\)|<>|\[\]/g, "…")}”`;
+  const name = label ? `“${label}”` : type.startsWith("pc_") || type.startsWith("pd_") ? "seu bloco" : `“${blockText({ type, fields: json?.fields || {}, inputs: json?.inputs || {} }).replace(/\(\)|<>|\[\]/g, "…")}”`;
   const ex = EXAMPLES[type] || (type.startsWith("pc_") ? "Um bloco que você criou em Meus Blocos. O que ele faz está embaixo do “definir” dele." : type.startsWith("pd_") ? "Monte embaixo deste bloco o que o seu bloco deve fazer." : "");
   const box = $("#blockHelpText");
   box.innerHTML = `<b>${esc(name)}</b> <span class="muted">(${esc(cat)})</span> — ${esc(d.tip)}${ex ? ` <span class="muted">${esc(ex)}</span>` : ""}`;

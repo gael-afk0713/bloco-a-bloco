@@ -96,8 +96,8 @@ function* exec(b, th) {
     case "ev_broadcastwait": { const ths = fire("ev_receive", hb => hb.fields?.MSG === F(b, "MSG")); yield* waitFor(th, () => ths.every(x => x.done)); break; }
     // Controle
     case "ct_wait": yield* waitSecs(th, num(inp(b, "SECS", th))); break;
-    case "ct_repeat": { const n = Math.round(num(inp(b, "TIMES", th))); for (let i = 0; i < n && !th.done; i++) { yield* runStack(sub(b, "SUBSTACK"), th); yield* loopYield(th); } break; }
-    case "ct_forever": while (!th.done) { yield* runStack(sub(b, "SUBSTACK"), th); yield* loopYield(th); } break;
+    case "ct_repeat": { const n = Math.round(num(inp(b, "TIMES", th))), lap = { kind: "repetir", i: 0, n }; (th.laps ||= []).push(lap); try { for (let i = 0; i < n && !th.done; i++) { lap.i = i + 1; yield* runStack(sub(b, "SUBSTACK"), th); yield* loopYield(th); } } finally { th.laps.pop(); } break; }
+    case "ct_forever": { const lap = { kind: "sempre", i: 0 }; (th.laps ||= []).push(lap); try { while (!th.done) { lap.i++; yield* runStack(sub(b, "SUBSTACK"), th); yield* loopYield(th); } } finally { th.laps.pop(); } break; }
     case "ct_if": if (bool(inp(b, "COND", th))) yield* runStack(sub(b, "SUBSTACK"), th); break;
     case "ct_ifelse": yield* runStack(sub(b, bool(inp(b, "COND", th)) ? "SUBSTACK" : "SUBSTACK2"), th); break;
     case "ct_waituntil": yield* waitFor(th, () => bool(inp(b, "COND", th))); break;

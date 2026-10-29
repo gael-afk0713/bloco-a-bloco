@@ -1,6 +1,11 @@
 // =====================================================================
 // Catálogo de blocos (todos os do Scratch 3 + extras para jogos)
 // =====================================================================
+// Menu do botão direito em português simples (a tradução do Blockly usa “Deletar”, “Colapsar”…)
+Object.assign(Blockly.Msg, { DELETE_BLOCK: "Apagar bloco", DELETE_X_BLOCKS: "Apagar %1 blocos", COLLAPSE_BLOCK: "Recolher bloco", EXPAND_BLOCK: "Abrir bloco",
+  DISABLE_BLOCK: "Desativar bloco", ENABLE_BLOCK: "Ativar bloco", COLLAPSE_ALL: "Recolher todos", EXPAND_ALL: "Abrir todos", CLEAN_UP: "Arrumar os blocos",
+  DELETE_ALL_BLOCKS: "Apagar todos os %1 blocos?", ADD_COMMENT: "Adicionar comentário", REMOVE_COMMENT: "Tirar comentário", HELP: "Ajuda", UNDO: "Desfazer", REDO: "Refazer",
+  INLINE_INPUTS: "Espaços na mesma linha", EXTERNAL_INPUTS: "Espaços um embaixo do outro" });
 const CAT = {
   mv: ["Movimento", "#4a7fe0"], lk: ["Aparência", "#8a55d6"], snd: ["Som", "#c157c4"], ev: ["Eventos", "#e3a400"],
   ct: ["Controle", "#ec8a24"], sn: ["Sensores", "#35a3d4"], op: ["Operadores", "#3aae5a"], var: ["Variáveis", "#ef6a2c"],
@@ -315,7 +320,14 @@ const LEVELS = [
 ];
 const curLevel = () => LEVELS.find(l => String(l.n) === $("#levelSel")?.value) || LEVELS[3];
 // Com a área de código estreita, descrições mais curtas para a paleta aberta não cobrir os blocos
-const tipMax = () => { const w = $("#blocklyDiv")?.clientWidth || innerWidth; return w < 700 ? 30 : w < 1000 ? 40 : 62; };
+const tipMax = () => { const w = $("#blocklyDiv")?.clientWidth || innerWidth; return w < 700 ? 26 : w < 1000 ? 38 : 62; };
+// A descrição curta quebra em até duas linhas (cada uma vira um rótulo na paleta)
+function tipLines(tip, keep = 2, whole = false) {
+  const max = tipMax(), words = (whole ? tip : shortTip(tip, max * keep)).split(" "), lines = [""];
+  for (const w of words) { if ((lines.at(-1) + " " + w).trim().length > max && lines.at(-1)) lines.push(""); lines[lines.length - 1] = (lines.at(-1) + " " + w).trim(); }
+  if (lines.length > keep) { lines.length = keep; lines[keep - 1] = lines[keep - 1].replace(/[.,;:]?$/, "…"); } // não corta calado
+  return lines.flatMap((text, i) => [...(i ? [{ kind: "sep", gap: 2 }] : []), { kind: "label", text, "web-class": "bab-tip" }]);
+}
 function buildToolbox() {
   const lv = curLevel(), stage = curSid === STAGE;
   const contents = [];
@@ -338,16 +350,27 @@ function buildToolbox() {
     const blocks = Object.keys(DEF).filter(ok);
     if (!blocks.length && !items.length) continue;
     const tips = $("#tipsChk")?.checked !== false;
-    const withTips = blocks.flatMap(t => tips ? [toolboxBlock(t), { kind: "label", text: shortTip(DEF[t].tip, tipMax()), "web-class": "bab-tip" }] : [toolboxBlock(t)]);
+    const withTips = blocks.flatMap(t => tips ? [toolboxBlock(t), ...tipLines(DEF[t].tip)] : [toolboxBlock(t)]);
     contents.push({ kind: "category", name, categorystyle: cat + "_category", contents: [...items, ...withTips] });
   }
   // Os níveis escondem blocos; esta categoria avisa que existem mais e sobe de nível com um clique
   const next = { 1: 2, 2: 3, 3: 0 }[lv.n];
+  if (next) {
+    const nl = LEVELS.find(l => l.n === next), shown = new Set(contents.map(c => c.name));
+    for (const [cat, [name]] of Object.entries(CAT)) {
+      if (shown.has(name) || cat === "proc" && next !== 3) continue;
+      if (!Object.keys(DEF).some(t => DEF[t].cat === cat && !DEF[t].hidden && nl.ok(t) && !(stage && !DEF[t].stageOk) && !(!stage && !DEF[t].spriteOk))) continue;
+      contents.push({ kind: "category", name: "🔒 " + name, colour: "#8a96a3", contents: [
+        { kind: "label", text: `${name} chega no ${nl.name.split(" · ")[0]}.`, "web-class": "bab-tip" },
+        { kind: "button", text: `Subir para o ${nl.name.split(" · ")[0]}`, callbackKey: "LEVEL_UP" },
+      ] });
+    }
+  }
   if (next !== undefined) {
     const nl = LEVELS.find(l => l.n === next);
     contents.push({ kind: "category", name: "Mais blocos", colour: "#8a96a3", contents: [
       { kind: "label", text: `Você está no ${lv.name.split(" · ")[0]}.`, "web-class": "bab-tip" },
-      { kind: "label", text: next ? nl.about : "Ver todos os blocos, como no Scratch.", "web-class": "bab-tip" },
+      ...tipLines(next ? nl.about : "Ver todos os blocos, como no Scratch.", 4, true),
       { kind: "button", text: next ? `Subir para o ${nl.name.split(" · ")[0]}` : "Mostrar todos os blocos", callbackKey: "LEVEL_UP" },
     ] });
   }
@@ -374,7 +397,8 @@ try {
   // Quem já usava o Bloco a Bloco continua vendo tudo; quem chega agora começa no Nível 1
   let lv = localStorage.getItem("bab-nivel");
   if (lv === null) {
-    lv = localStorage.getItem("bab-simples") === "1" ? "3" : localStorage.getItem("bab-projeto-v3") ? "0" : "1";
+    let hasWork = false; try { hasWork = Object.keys(JSON.parse(localStorage.getItem("bab-projeto-v3") || "{}")).some(k => k.startsWith("scripts/")); } catch (_) {}
+    lv = localStorage.getItem("bab-simples") === "1" ? "3" : hasWork ? "0" : "1";
     // Grava já: senão, ao recarregar, o projeto salvo faria o nível virar “Sem níveis”
     localStorage.setItem("bab-nivel", lv);
   }
@@ -394,4 +418,9 @@ let lastTipMax = tipMax();
 new ResizeObserver(() => { Blockly.svgResize(ws); if (tipMax() !== lastTipMax) { lastTipMax = tipMax(); refreshToolbox(); } }).observe($("#blocklyDiv"));
 let toolboxTimer = null;
 // Atualiza a caixa de ferramentas e a categoria aberta (para uma variável nova aparecer na hora)
-const refreshToolbox = () => { clearTimeout(toolboxTimer); toolboxTimer = setTimeout(() => { ws.updateToolbox(buildToolbox()); try { ws.getToolbox()?.refreshSelection?.(); } catch (_) {} }, 60); };
+// A variável nova só chega ao projeto depois de salva: refaz a paleta de novo um pouco depois
+const openCategory = name => { try { const tb = ws.getToolbox(), it = tb.getToolboxItems().find(i => i.getName?.() === name); if (it) { tb.clearSelection(); tb.setSelectedItem(it); } } catch (_) {} };
+const refreshToolbox = reopen => {
+  const go = () => { ws.updateToolbox(buildToolbox()); try { if (reopen) openCategory(reopen); else ws.getToolbox()?.refreshSelection?.(); } catch (_) {} };
+  clearTimeout(toolboxTimer); toolboxTimer = setTimeout(() => { go(); toolboxTimer = setTimeout(go, 400); }, 60);
+};

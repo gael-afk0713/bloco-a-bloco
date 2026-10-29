@@ -108,7 +108,7 @@ function saveMedia(url) { const id = uid(); media.set(id, url); write("media/" +
 
 function newSpriteDoc(name, costumes, extra = {}) {
   const taken = spriteList().map(([, s]) => s.name);
-  return { name: uniqueName(name, taken), order: Date.now(), x: 0, y: 0, dir: 90, size: 100, visible: true, rot: "all", draggable: false, costume: 0, costumes, sounds: { [uid()]: { name: "Pop", kind: "synth", ref: "pop", order: 0 } }, vars: {}, lists: {}, procs: {}, ...extra };
+  return { name: uniqueName(name, taken), order: Date.now(), x: 0, y: 0, dir: 90, size: 100, visible: true, rot: "lr", draggable: false, costume: 0, costumes, sounds: { [uid()]: { name: "Pop", kind: "synth", ref: "pop", order: 0 } }, vars: {}, lists: {}, procs: {}, ...extra };
 }
 function addSpriteDoc(doc) {
   const id = uid();

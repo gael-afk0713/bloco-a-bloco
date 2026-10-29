@@ -15,7 +15,7 @@ function modal(html, onMount) {
 }
 function askName(title, label, placeholder, allowLocal, cb) {
   modal(`<h2>${esc(title)}</h2><label class="label" for="nmIn">${esc(label)}</label><input type="text" id="nmIn" placeholder="Escreva um nome (ex.: ${esc(placeholder)})" maxlength="40">
-    ${allowLocal && curSid !== STAGE ? `<label class="row"><input type="checkbox" id="nmLocal"> Só para este ator (cada clone tem a sua)</label>` : ""}
+    ${allowLocal && curSid !== STAGE ? `<label class="row"><input type="checkbox" id="nmLocal"> Só para este ator (os outros atores não usam esta)</label>` : ""}
     <div class="row"><button class="btn primary" id="nmOk">Criar</button><button class="btn" data-close>Cancelar</button></div>`, (m, close) => {
     const go = () => { const v = $("#nmIn").value || placeholder; const local = $("#nmLocal")?.checked; close(); cb(v, local); };
     $("#nmOk").onclick = go; $("#nmIn").addEventListener("keydown", e => { if (e.key === "Enter") go(); }); setTimeout(() => $("#nmIn")?.focus(), 30);

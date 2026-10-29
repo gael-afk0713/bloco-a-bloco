@@ -136,16 +136,27 @@ function startMission(m) {
   mission = { m, idx: -1, card, hand, ring, ghost, t0: now() };
   lessonRan.flag = false; lessonRan.key = false;
   mission.timer = setInterval(checkMission, 350);
+  // Confere logo depois de cada mudança nos blocos, sem esperar o próximo tique
+  mission.listener = e => { if (!e.isUiEvent || e.type === Blockly.Events.BLOCK_DRAG) { setTimeout(checkMission, 0); setTimeout(checkMission, 150); } };
+  ws.addChangeListener(mission.listener);
   checkMission(); handLoop();
 }
 function stopMission(silent) {
   if (!mission) return;
-  clearInterval(mission.timer); cancelAnimationFrame(mission.raf);
+  clearInterval(mission.timer); cancelAnimationFrame(mission.raf); ws.removeChangeListener(mission.listener);
   mission.card.remove(); mission.hand.remove(); mission.ring.remove(); mission.ghost.remove();
   mission = null;
   if (!silent) narrate("Missão fechada. Você pode voltar a ela na aba Lições.");
 }
-function stepState(m) { return m.steps.map(s => { try { return !!s.done(); } catch (_) { return false; } }); }
+// “Abra a categoria” fica feito depois de feito: a paleta fecha sozinha ao soltar e o passo não deve voltar
+function stepState(m) {
+  return m.steps.map((s, i) => {
+    if (mission?.sticky?.has(i)) return true;
+    let ok = false; try { ok = !!s.done(); } catch (_) {}
+    if (ok && s.point?.cat) (mission.sticky ||= new Set()).add(i);
+    return ok;
+  });
+}
 function checkMission() {
   if (!mission) return;
   if (curSid && !busyEditing()) diffWorkspace(); // confere já o que está na tela, sem esperar o salvamento
@@ -185,7 +196,7 @@ function sayAloud(text, btn) {
 }
 function finishMission() {
   const { m, card } = mission;
-  clearInterval(mission.timer); cancelAnimationFrame(mission.raf);
+  clearInterval(mission.timer); cancelAnimationFrame(mission.raf); ws.removeChangeListener(mission.listener);
   mission.hand.remove(); mission.ring.remove(); mission.ghost.remove();
   missionDone[m.id] = true; try { localStorage.setItem("bab-missoes", JSON.stringify(missionDone)); } catch (_) {}
   const next = MISSIONS.find(x => !missionDone[x.id]);
@@ -237,35 +248,40 @@ function flyoutBlockRect(type) {
   const b = fo.getWorkspace().getTopBlocks(false).find(x => x.type === type);
   if (!b) return null;
   const r = b.getSvgRoot().getBoundingClientRect(), box = fo.getWorkspace().getParentSvg().getBoundingClientRect();
-  if (r.top > box.bottom - 10 || r.bottom < box.top + 10) { // fora da parte visível: rola a paleta até ele
+  if (r.bottom > box.bottom - 4 || r.top < box.top + 4) { // cortado ou fora da parte visível: rola a paleta até ele
     try { fo.getWorkspace().scrollbar?.set(0, Math.max(0, b.getRelativeToSurfaceXY().y * fo.getWorkspace().scale - 40)); } catch (_) {}
     return null;
   }
   return r;
 }
+// A mãozinha toca perto do canto de baixo à direita, para não cobrir o texto do botão ou da categoria
+const tapAt = r => ({ x: r.left + r.width * .8, y: r.top + r.height * .72 });
 // Devolve o que desenhar agora: anel (ring), mãozinha parada (tap) ou arrastando (from → to)
 function aim() {
   const p = mission.m.steps[mission.idx].point || {};
   if (p.drag) {
     const r = flyoutBlockRect(p.drag);
-    if (!r) { const c = catRect(DEF[p.drag].cat); return c ? { ring: c, tap: { x: c.left + c.width / 2, y: c.top + c.height / 2 }, hint: `Primeiro abra ${CAT[DEF[p.drag].cat][0]}.` } : null; }
+    // “Primeiro abra…” só depois de um tempinho: logo após soltar um bloco a paleta fecha e o passo ainda está sendo conferido
+    if (!r) { mission.closedAt ||= now(); const c = catRect(DEF[p.drag].cat); return c ? { ring: c, tap: tapAt(c), hint: now() - mission.closedAt > 1500 ? `Primeiro abra ${CAT[DEF[p.drag].cat][0]}.` : null } : null; }
+    mission.closedAt = 0;
     const to = dropPoint(p);
     if (p.to || p.into || p.slot) { // o lugar de soltar ficou atrás da paleta aberta: rola a área de código
       const fr = ws.getToolbox().getFlyout().getWorkspace().getParentSvg().getBoundingClientRect(), area = $("#blocklyDiv").getBoundingClientRect();
       if (area.right - fr.right < 170) {} // tela estreita: não dá para mostrar os dois lado a lado
       else if (to.x < fr.right + 30) ws.scroll(ws.scrollX + (fr.right + 80 - to.x), ws.scrollY);
       else if (to.x > area.right - 40) ws.scroll(ws.scrollX - (to.x - area.right + 120), ws.scrollY);
-      if (to.y > area.bottom - 30 || to.y < area.top + 30) ws.scroll(ws.scrollX, ws.scrollY - (to.y - (area.top + area.height * .4)));
+      const cr = mission.card.getBoundingClientRect();
+      if (to.y > area.bottom - 30 || to.y < area.top + 30 || (to.x > cr.left - 20 && to.y > cr.top - 20)) ws.scroll(ws.scrollX, ws.scrollY - (to.y - (area.top + area.height * .35)));
     }
-    return { ring: r, from: { x: r.left + 18, y: r.top + r.height / 2 }, to, label: blockLabel(p.drag), color: CAT[DEF[p.drag].cat][1] };
+    return { ring: r, from: { x: r.left + 10, y: r.bottom - 2 }, to, label: blockLabel(p.drag), color: CAT[DEF[p.drag].cat][1] };
   }
-  if (p.cat) { const c = catRect(p.cat); return c && { ring: c, tap: { x: c.left + c.width / 2, y: c.top + c.height / 2 } }; }
-  if (p.el) { const r = $(p.el).getBoundingClientRect(); return { ring: r, tap: { x: r.left + r.width / 2, y: r.top + r.height / 2 } }; }
+  if (p.cat) { const c = catRect(p.cat); return c && { ring: c, tap: tapAt(c) }; }
+  if (p.el) { const r = $(p.el).getBoundingClientRect(); return { ring: r, tap: tapAt(r) }; }
   if (p.stage) { const r = $("#stage").getBoundingClientRect(); return { ring: r, tap: { x: r.left + r.width / 2, y: r.top + r.height / 2 } }; }
   if (p.sprite !== undefined) {
     const sid = p.sprite ? spriteByName(p.sprite)?.[0] : spriteList()[0]?.[0];
     const el = sid && document.querySelector(`#tiles [data-sid="${CSS.escape(sid)}"]`); if (!el) return null;
-    const r = el.getBoundingClientRect(); return { ring: r, tap: { x: r.left + r.width / 2, y: r.top + r.height / 2 } };
+    const r = el.getBoundingClientRect(); return { ring: r, tap: tapAt(r) };
   }
   if (p.field) { const b = findWs(p.field[0]), el = b?.getField(p.field[1])?.getSvgRoot?.(); if (!el) return null; const r = el.getBoundingClientRect(); return { ring: r, tap: { x: r.right - 10, y: r.top + r.height / 2 } }; }
   if (p.num) { const b = findWs(p.num[0]), sh = b?.getInput(p.num[1])?.connection?.targetBlock(); if (!sh) return null; const r = sh.getSvgRoot().getBoundingClientRect(); return { ring: r, tap: { x: r.left + r.width / 2, y: r.top + r.height / 2 } }; }
@@ -276,7 +292,7 @@ function handLoop() {
   if (!mission) return;
   mission.raf = requestAnimationFrame(handLoop);
   const { hand, ring, ghost, card } = mission;
-  const hide = () => { hand.style.display = ring.style.display = ghost.style.display = "none"; };
+  const hide = () => { hand.style.display = ring.style.display = ghost.style.display = "none"; card.querySelector(".m-hint")?.remove(); };
   if (card.classList.contains("min") || $("#paneCode").hidden || ws.isDragging() || $("#modalRoot").children.length || Blockly.DropDownDiv.isVisible() || Blockly.WidgetDiv.isVisible()) return hide();
   let a = null; try { a = aim(); } catch (_) {}
   if (!a) return hide();
@@ -305,8 +321,9 @@ function handLoop() {
 
 // Primeira visita: oferece a primeira missão
 setTimeout(() => {
-  let seen = true; try { seen = localStorage.getItem("bab-boasvindas") === "1"; localStorage.setItem("bab-boasvindas", "1"); } catch (_) {}
+  let seen = true; try { seen = localStorage.getItem("bab-boasvindas") === "1"; } catch (_) {}
   if (seen || mission || ![1, 2].includes(curLevel().n) || $("#modalRoot").children.length) return;
+  try { localStorage.setItem("bab-boasvindas", "1"); } catch (_) {}
   modal(`<div class="m-top" style="display:flex;gap:12px;align-items:center"><img alt="" style="width:56px" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(LIB["robo-a"].svg)}"><h2>Oi! Vamos criar o seu primeiro programa?</h2></div>
     <p style="margin:0">Uma mãozinha vai mostrar onde clicar e o que arrastar. Leva uns 2 minutos.</p>
     <div class="row"><button class="btn primary" id="wGo">Começar a primeira missão</button><button class="btn" data-close>Agora não</button></div>`, (mm, close) => { $("#wGo").onclick = () => { close(); askMission(MISSIONS[0].id); }; });

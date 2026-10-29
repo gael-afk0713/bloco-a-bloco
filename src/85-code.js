@@ -84,7 +84,8 @@ function makeGen(L, comments) {
     return out;
   }
   function body(b, name, ind) { const inner = b.inputs?.[name]?.block; const s = inner ? stmts(inner, ind) : []; return s.length ? s : [ind + (py ? "pass" : "// (vazio)")]; }
-  const line = (ind, code, b) => ind + code + (comments && DEF[b.type] ? (py ? "  # " : "  // ") + shortTip(DEF[b.type].tip) : "");
+  // O comentário vai na linha de cima (como se escreve de verdade), assim as linhas não ficam compridas demais
+  const line = (ind, code, b) => (comments && DEF[b.type] ? ind + (py ? "# " : "// ") + shortTip(DEF[b.type].tip) + "\n" : "") + ind + code;
   function stmt(b, ind) {
     const X = n => x(b, n), P = n => xp(b, n), I2 = ind + (py ? "    " : "\t");
     const one = code => [line(ind, code, b)];
@@ -215,7 +216,9 @@ function generateCode(L, scope, comments) {
   const targets = scope === "project" ? [[STAGE, "Palco"], ...spriteList().map(([id, s]) => [id, s.name])] : [[curSid, curSid === STAGE ? "Palco" : curDoc()?.name || "Ator"]];
   const used = new Map(); const fname = base => { const n = (used.get(base) || 0) + 1; used.set(base, n); return n > 1 ? `${base}_${n}` : base; };
   const out = [], flags = [];
-  const globals = [...live(project.meta.vars).map(([, v]) => [v.name, v.value]), ...targets.flatMap(([sid]) => live(docOf(sid)?.vars).map(([, v]) => [v.name, v.value]))];
+  // Valor de agora: o do jogo rodando, se houver (variável do ator fica no ator, a do projeto em rt.vars)
+  const nowVal = (sid, v) => { const t = rt.targets.find(x => x.sid === sid && !x.clone); return t?.vars?.has(v.name) ? t.vars.get(v.name) : rt.vars.has(v.name) ? rt.vars.get(v.name) : v.value; };
+  const globals = [...new Map([...live(project.meta.vars).map(([, v]) => [v.name, nowVal(null, v)]), ...targets.flatMap(([sid]) => live(docOf(sid)?.vars).map(([, v]) => [v.name, nowVal(sid, v)]))])];
   const lists = [...live(project.meta.lists).map(([, v]) => v.name), ...targets.flatMap(([sid]) => live(docOf(sid)?.lists).map(([, v]) => v.name))];
   const sections = [];
   for (const [sid, name] of targets) {
@@ -264,16 +267,17 @@ function generateCode(L, scope, comments) {
   }
   const title = scope === "project" ? project.meta.title : targets[0][1];
   if (py) {
-    out.push(`# ${title}: código gerado pelo Bloco a Bloco a partir dos seus blocos.`);
-    out.push("# Funções como mover() e dizer() têm o mesmo nome dos blocos, em português.");
-    out.push("# Atenção: “bloco_a_bloco” é uma biblioteca de faz de conta para mostrar a ideia;");
-    out.push("# a lógica (laços, se, variáveis, contas) é Python de verdade, mas este arquivo não roda sozinho.");
-    out.push("from bloco_a_bloco import *", "import random, math", "");
-    if (globals.length || lists.length) { out.push("# Variáveis e listas (com o valor que têm agora)", ...(comments ? ["# Dentro de uma função, “global” avisa que a variável é esta daqui de fora."] : [])); globals.forEach(([n, v]) => out.push(`${ident(n)} = ${typeof v === "number" || (String(v).trim() !== "" && Number.isFinite(Number(v))) ? Number(v) : quote(v)}`)); lists.forEach(n => out.push(`${ident(n)} = []`)); out.push(""); }
+    out.push(`# ${title}: os seus blocos escritos em Python.`);
+    out.push("# mover(), dizer() e outros comandos de jogo têm o nome dos blocos.");
+    out.push("# Laços, se, variáveis e contas são Python de verdade.");
+    const body = sections.flat().join("\n"), mods = ["random", "math"].filter(m => body.includes(m + "."));
+    out.push("from bloco_a_bloco import *", ...(mods.length ? [`import ${mods.join(", ")}`] : []), "");
+    if (globals.length || lists.length) { out.push("# Variáveis e listas (com o valor que têm agora)", ...(comments ? ["# Dentro de uma função, “global” quer dizer: use a variável do jogo todo, esta aqui de cima."] : [])); globals.forEach(([n, v]) => out.push(`${ident(n)} = ${typeof v === "number" || (String(v).trim() !== "" && Number.isFinite(Number(v))) ? Number(v) : quote(v)}`)); lists.forEach(n => out.push(`${ident(n)} = []`)); out.push(""); }
     sections.forEach(s => out.push(...s));
     if (!sections.length) out.push("# Ainda não há scripts aqui. Monte blocos na aba Código e volte.");
   } else {
-    out.push("programa", "{", "\tinclua biblioteca Util", "\tinclua biblioteca Matematica", "\tinclua biblioteca Texto", "");
+    const body = sections.flat().join("\n"), libs = ["Util", "Matematica", "Texto"].filter(l => body.includes(l + "."));
+    out.push("programa", "{", ...libs.map(l => `\tinclua biblioteca ${l}`), "");
     out.push(`\t// ${title}: código gerado pelo Bloco a Bloco a partir dos seus blocos.`);
     out.push("\t// Funções como mover() e dizer() têm o mesmo nome dos blocos.", "");
     if (globals.length || lists.length) { out.push("\t// Variáveis e listas"); globals.forEach(([n, v]) => { const isNum = typeof v === "number" || (String(v).trim() !== "" && Number.isFinite(Number(v))); out.push(`\t${isNum ? "real" : "cadeia"} ${ident(n)} = ${isNum ? Number(v) : quote(v)}`); }); lists.forEach(n => out.push(`\tcadeia ${ident(n)}[100]  // lista`)); out.push(""); }
@@ -304,12 +308,21 @@ const CODE_GUIDE = {
 };
 function renderTextCode() {
   const pane = $("#paneText"), L = codeView.lang;
+  if (curLevel().n === 1 && !codeView.peek) {
+    pane.innerHTML = `<div class="code-gate"><h3>Python e Portugol chegam no Nível 2</h3>
+      <p class="muted" style="margin:0">Aqui os seus blocos viram código escrito, igual ao que programadores usam. No Nível 1 a gente aprende primeiro com os blocos.</p>
+      <div class="row"><button class="btn primary" id="gateUp">Subir para o Nível 2</button><button class="btn" id="gatePeek">Só espiar o código</button></div></div>`;
+    $("#gateUp").onclick = () => { setLevel(2); renderTextCode(); };
+    $("#gatePeek").onclick = () => { codeView.peek = true; renderTextCode(); };
+    return;
+  }
   const code = generateCode(L, codeView.scope, codeView.comments);
   pane.innerHTML = `<div class="code-bar">
       <div class="seg" role="group" aria-label="Linguagem"><button data-lang="py" aria-pressed="${L === "py"}">Python</button><button data-lang="pt" aria-pressed="${L === "pt"}">Portugol</button></div>
       <div class="seg" role="group" aria-label="Mostrar"><button data-scope="sprite" aria-pressed="${codeView.scope === "sprite"}">${esc(curSid === STAGE ? "Palco" : curDoc()?.name || "Ator")}</button><button data-scope="project" aria-pressed="${codeView.scope === "project"}">Projeto inteiro</button></div>
       <label class="check"><input type="checkbox" id="cmtChk" ${codeView.comments ? "checked" : ""}> Explicar cada linha</label>
       <span style="flex:1"></span>
+      <span class="muted" style="font-size:.8rem">Só para ler: para mudar o código, mude os blocos.</span>
       <button class="btn small" id="copyCode">Copiar código</button><button class="btn small" id="saveCode">Baixar</button>
     </div>
     <div class="code-wrap"><pre class="code" id="codeOut" tabindex="0">${highlight(code, L)}</pre>

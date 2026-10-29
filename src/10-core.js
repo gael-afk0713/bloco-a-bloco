@@ -10,7 +10,10 @@ const IN_CLAUDE = !!(window.claude && window.claude.use);
 const now = () => performance.now();
 function deepMerge(a, b) { const o = { ...(a || {}) }; for (const k in b) o[k] = b[k] && typeof b[k] === "object" && !Array.isArray(b[k]) && o[k] && typeof o[k] === "object" && !Array.isArray(o[k]) ? deepMerge(o[k], b[k]) : b[k]; return o; }
 function uniqueName(base, taken) { let n = base, i = 2; while (taken.includes(n)) n = base + i++; return n; }
-function narrate(t) { $("#narr").textContent = t; }
+function narrate(t, pulse) {
+  const el = $("#narr"); el.textContent = t;
+  if (pulse) { el.classList.remove("pulse"); void el.offsetWidth; el.classList.add("pulse"); }
+}
 function showBanner(t) { const b = $("#banner"); b.textContent = t; b.hidden = false; }
 function hexToRgb(h) { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || "")); if (!m) return [0, 0, 0]; const n = parseInt(m[1], 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
 function rgbToHsv(r, g, b) { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let h = 0; if (d) h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; return [h, mx ? d / mx : 0, mx]; }

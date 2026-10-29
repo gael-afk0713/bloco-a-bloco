@@ -93,8 +93,11 @@ let stepToken = 0;
 function* gate(b, th) {
   const mode = $("#speedSel").value;
   if (mode === "normal" || th.warp > 0) return;
-  if (th.target.sid === curSid) ws.highlightBlock(b.id);
-  narrate(explain(b, th));
+  ws.highlightBlock(th.target.sid === curSid ? b.id : null); // bloco de outro ator: não deixa aceso um bloco que não é o narrado
+  // Dentro de um laço, diz em que volta está: assim cada “Próximo” mostra algo novo
+  const lap = th.laps?.at(-1);
+  const other = th.target.sid !== curSid ? `[${spriteName(th.target)}, outro ator: clique nele para ver os blocos] ` : ""; // narração de outro ator: diz de quem é
+  narrate(other + (lap ? `Volta ${lap.i}${lap.n ? " de " + lap.n : ""} do “${lap.kind}”. ` : "") + explain(b, th), true);
   if (mode === "slow") yield* waitSecs(th, .55);
   else { const tk = stepToken; $("#stepBtn").hidden = false; yield* waitFor(th, () => stepToken !== tk || $("#speedSel").value !== "step"); }
 }

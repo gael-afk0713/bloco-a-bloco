@@ -48,11 +48,14 @@ button { cursor: pointer; }
 .muted { color: var(--muted); }
 
 /* Topo e menu */
+.short { display: none; }
+@media (max-width: 1400px) { .long { display: none; } .short { display: inline; } }
+.level-wrap { display: inline-flex; gap: 4px; align-items: center; }
 .top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 10px; }
 .brand h1 { font-size: 1.5rem; } .brand h1 span { color: var(--accent); }
 .menu { display: flex; gap: 4px; flex-wrap: wrap; }
 .menu .btn { font-weight: 600; font-size: .88rem; }
-#projTitle { border: 1px solid transparent; background: transparent; font-family: var(--f-display); font-size: 1.05rem; padding: 3px 8px; border-radius: 8px; min-width: 0; width: 14em; max-width: 100%; }
+#projTitle { border: 1px solid transparent; background: transparent; font-family: var(--f-display); font-size: 1.05rem; padding: 3px 8px; border-radius: 8px; min-width: 7em; width: 14em; max-width: 100%; flex: 0 1 14em; }
 #projTitle:hover, #projTitle:focus { border-color: var(--line); background: var(--panel); }
 .people { margin-left: auto; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .person { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px 2px 2px; border-radius: 999px; background: var(--panel); border: 2px solid var(--pc, var(--line)); font-size: .82rem; }
@@ -97,6 +100,8 @@ button { cursor: pointer; }
 .readout { display: flex; flex-wrap: wrap; gap: 2px 12px; font-family: var(--f-mono); font-size: .76rem; color: var(--muted); padding: 6px 12px 0; font-variant-numeric: tabular-nums; }
 .narr { margin: 8px 10px 10px; border-left: 4px solid var(--glow); background: var(--panel-2); border-radius: 0 8px 8px 0; padding: 8px 10px; min-height: 52px; font-size: .92rem; }
 .narr p { margin: 2px 0 0; }
+.narr p.pulse { animation: narrpulse .7s ease-out; }
+@keyframes narrpulse { from { background: color-mix(in srgb, var(--glow) 35%, transparent); } to { background: transparent; } }
 
 /* Modo jogador */
 body.player #editorCard, body.player .side > *:not(:first-child), body.player .narr, body.player .readout { display: none; }
@@ -140,7 +145,8 @@ body.player .side { max-width: min(960px, calc((100vh - 120px) * 4 / 3)); width:
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
 .code-bar .check { display: inline-flex; gap: 5px; align-items: center; font-size: .86rem; color: var(--muted); }
 .code-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 260px; min-height: 0; }
-pre.code { margin: 0; padding: 14px 16px; overflow: auto; font-family: var(--f-mono); font-size: .84rem; line-height: 1.65; max-height: calc(100vh - 190px); tab-size: 4; background: var(--panel); }
+@media (max-width: 1100px) { .code-wrap { grid-template-columns: minmax(0, 1fr); } .code-guide { border-left: 0; border-top: 1px solid var(--line); max-height: none; } }
+pre.code { margin: 0; padding: 14px 16px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--f-mono); font-size: .84rem; line-height: 1.65; max-height: calc(100vh - 190px); tab-size: 4; background: var(--panel); }
 pre.code .kw { color: #c157c4; font-weight: 600; } pre.code .st { color: #1f8a4c; } pre.code .nu { color: #d4691a; } pre.code .cm { color: var(--muted); font-style: italic; } pre.code .fn { color: var(--accent); }
 .code-guide { border-left: 1px solid var(--line); padding: 12px; font-size: .86rem; overflow: auto; max-height: calc(100vh - 190px); display: flex; flex-direction: column; gap: 10px; }
 .code-guide h3 { font-size: 1rem; }
@@ -238,7 +244,8 @@ textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .level-pick select { border: 2px solid var(--accent); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 3px 6px; font-weight: 700; font-size: .84rem; }
 /* Nível 1: esconde o que ainda não faz sentido para quem está começando */
-body[data-level="1"] [data-tab="text"], body[data-level="1"] #mExport { display: none; }
+body[data-level="1"] #mExport { display: none; }
+.code-gate { padding: 28px 24px; display: flex; flex-direction: column; gap: 12px; max-width: 520px; }
 
 /* Missões guiadas: cartão com o passo e uma mãozinha que mostra onde clicar ou arrastar */
 #paneCode { position: relative; }
@@ -288,9 +295,9 @@ body[data-level="1"] [data-tab="text"], body[data-level="1"] #mExport { display:
   <div class="brand"><h1>Bloco <span>a</span> Bloco</h1></div>
   <nav class="menu" aria-label="Arquivo">
     <button class="btn small" id="mNew">Novo</button>
-    <button class="btn small" id="mOpen" title="Abre um projeto salvo (.json) ou um projeto do Scratch (.sb3)">Abrir / importar .sb3</button>
-    <button class="btn small" id="mSave">Salvar no computador</button>
-    <button class="btn small" id="mExport" title="Gera um arquivo .sb3 que abre no Scratch (Arquivo → Carregar do seu computador)">Exportar para o Scratch</button>
+    <button class="btn small" id="mOpen" title="Abre um projeto salvo (.json) ou um projeto do Scratch (.sb3)"><span class="long">Abrir / importar .sb3</span><span class="short">Abrir</span></button>
+    <button class="btn small" id="mSave" title="Baixa o projeto para o seu computador"><span class="long">Salvar no computador</span><span class="short">Salvar</span></button>
+    <button class="btn small" id="mExport" title="Gera um arquivo .sb3 que abre no Scratch (Arquivo → Carregar do seu computador)"><span class="long">Exportar para o Scratch</span><span class="short">Exportar .sb3</span></button>
   </nav>
   <input id="projTitle" aria-label="Nome do projeto" value="Meu projeto" maxlength="60">
   <div class="people" id="people"><span class="mode-chip">Carregando…</span></div>
@@ -306,9 +313,11 @@ body[data-level="1"] [data-tab="text"], body[data-level="1"] #mExport { display:
       <button role="tab" data-tab="sounds" aria-selected="false">Sons</button>
       <button role="tab" data-tab="text" aria-selected="false">Python / Portugol</button>
       <span class="spacer"></span>
+      <button class="btn small" id="undoBtn" title="Desfazer a última mudança nos blocos (Ctrl+Z)">↶ Desfazer</button>
       <button class="btn small" id="missionsBtn" title="Missões com a mãozinha: ela mostra o que arrastar">🎯 Missões</button>
       <label class="editing"><input type="checkbox" id="tipsChk" checked> Descrições</label>
-      <label class="editing level-pick" title="Cada nível mostra só os blocos daquele momento. Escolha “Sem níveis” para ver todos."><span class="sr-only">Nível</span><select id="levelSel" aria-label="Nível de blocos"></select></label>
+      <span class="level-wrap"><label class="editing level-pick" title="Cada nível mostra só os blocos daquele momento. Escolha “Sem níveis” para ver todos."><span class="sr-only">Nível</span><select id="levelSel" aria-label="Nível de blocos"></select></label>
+      <button class="btn small" id="levelHelp" aria-label="O que são os níveis?" title="O que são os níveis?">?</button></span>
     </div>
     <div id="paneCode"><div class="block-help" id="blockHelp" aria-live="polite"><span class="label">Sobre o bloco</span><span id="blockHelpText">Clique em qualquer bloco para ver o que ele faz e um exemplo.</span></div><div id="blocklyDiv"></div></div>
     <div id="paneText" hidden></div>

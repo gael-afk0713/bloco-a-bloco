@@ -4,24 +4,38 @@
 $("#flagBtn").onclick = () => { actx(); greenFlag(); };
 $("#stopBtn").onclick = () => stopAll();
 $("#stepBtn").onclick = () => { stepToken++; };
-$("#speedSel").onchange = () => { if ($("#speedSel").value === "normal") { ws.highlightBlock(null); $("#stepBtn").hidden = true; } };
+$("#speedSel").onchange = () => { rt.threads.forEach(th => th.laps?.forEach(l => { l.i = 0; })); if ($("#speedSel").value === "normal") { ws.highlightBlock(null); $("#stepBtn").hidden = true; } };
 $("#turboChk").onchange = e => { rt.turbo = e.target.checked; };
 function setLevel(n, quiet) {
   $("#levelSel").value = String(n);
   const lv = curLevel();
   document.body.dataset.level = lv.n;
-  ws.updateToolbox(buildToolbox()); try { ws.getToolbox()?.refreshSelection?.(); } catch (_) {}
+  const open = ws.getToolbox()?.getSelectedItem?.()?.getName?.();
+  ws.updateToolbox(buildToolbox()); if (open) openCategory(open.replace(/^🔒 /, "")); // subiu por uma categoria trancada: abre ela já liberada
   try { localStorage.setItem("bab-nivel", String(lv.n)); } catch (_) {}
   if (!quiet) narrate(`${lv.name}: ${lv.about}${lv.n ? " Você pode trocar de nível quando quiser." : ""}`);
   renderLesson();
 }
 $("#levelSel").onchange = () => setLevel($("#levelSel").value);
+$("#levelHelp").onclick = () => modal(`<h2>O que são os níveis?</h2>
+  <p style="margin:0">Cada nível mostra só os blocos daquele momento, para quem está começando não se perder. Nada some do projeto: os blocos já montados continuam lá.</p>
+  <ul class="issues">${LEVELS.map(l => `<li class="${String(l.n) === $("#levelSel").value ? "" : "tip"}"><strong>${esc(l.name)}${String(l.n) === $("#levelSel").value ? " · você está aqui" : ""}</strong><span>${esc(l.about)}</span></li>`).join("")}</ul>
+  <p class="muted" style="margin:0"><strong>Professor(a):</strong> para desligar os níveis, escolha “Sem níveis” na lista. A escolha fica guardada neste navegador.</p>
+  <div class="row"><button class="btn primary" data-close>Entendi</button></div>`);
 // As missões ficam na aba Lições, no fim da coluna da direita: este botão leva até lá
-$("#missionsBtn").onclick = () => {
-  document.querySelector('[data-help="lesson"]')?.click();
-  const box = $("#helpLesson"); box.scrollIntoView({ behavior: "smooth", block: "start" });
-  const list = box.querySelector(".mission-list"); list?.classList.add("bab-flash"); setTimeout(() => list?.classList.remove("bab-flash"), 2600);
-};
+$("#undoBtn").onclick = () => { const [x, y] = [ws.scrollX, ws.scrollY]; ws.undo(false); ws.scroll(x, y); narrate("Desfeito. Clique de novo para voltar mais um passo."); };
+// Ctrl+Z também funciona com o foco fora da área de código (dentro dela, o próprio Blockly cuida)
+document.addEventListener("keydown", e => {
+  if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "z" || e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+  narrate(e.shiftKey ? "Refeito." : "Desfeito. Aperte Ctrl+Z de novo para voltar mais um passo.");
+  if (e.target.closest?.("#blocklyDiv")) return;
+  e.preventDefault(); ws.undo(e.shiftKey);
+});
+$("#missionsBtn").onclick = () => modal(`<h2>🎯 Missões com a mãozinha</h2>
+  <p class="muted" style="margin:0">Escolha uma missão: uma mãozinha mostra onde clicar e o que arrastar. Elas também ficam na aba Lições.</p>
+  ${missionListHTML()}<div class="row"><button class="btn" data-close>Fechar</button></div>`, (m, close) => {
+  m.querySelectorAll("[data-mission]").forEach(b => b.onclick = () => { close(); askMission(b.dataset.mission); });
+});
 $("#tipsChk").onchange = () => { ws.updateToolbox(buildToolbox()); try { localStorage.setItem("bab-dicas", $("#tipsChk").checked ? "1" : "0"); } catch (_) {} };
 $("#projTitle").addEventListener("change", e => updateMeta({ title: e.target.value.trim() || "Meu projeto" }));
 $("#playerBtn").onclick = () => { document.body.classList.toggle("player"); $("#playerBtn").classList.toggle("on", document.body.classList.contains("player")); lastMonHTML = ""; setTimeout(() => { Blockly.svgResize(ws); renderMonitors(); }, 50); };

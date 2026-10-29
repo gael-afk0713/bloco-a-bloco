@@ -34,7 +34,7 @@ function loadWorkspace() {
   applying = true;
   Blockly.Events.disable();
   try {
-    ws.clear(); cache.clear();
+    ws.clear(); cache.clear(); ws.clearUndo();
     for (const [id, s] of project.scripts) {
       if (s.sprite !== curSid || !s.block || !knownTypes(s.block)) continue;
       collectExtras(s.block);
@@ -58,13 +58,36 @@ Blockly.Gesture.prototype.doBlockClick = function () {
   if (this.flyout?.autoClose && this.targetBlock) { showBlockHelp((this.targetBlock.getRootBlock?.() || this.targetBlock).type); return; }
   return blocklyBlockClick.call(this);
 };
+// Na área de código, a ajuda mostra o bloco com os valores escolhidos (“quando a tecla seta para a direita…”)
+function helpFor(b) {
+  if (!b) return;
+  let label = null; try { label = b.toString(90, "…").replace(/\s+/g, " ").trim(); } catch (_) {}
+  showBlockHelp(b.type, null, label);
+}
+// Clicar fora da área de código fecha o número em edição (e a paleta aberta)
+document.addEventListener("pointerdown", e => {
+  if (!e.target.closest?.("#blocklyDiv, .blocklyWidgetDiv, .blocklyDropDownDiv, .blocklyTooltipDiv")) try { ws.hideChaff(false); } catch (_) {}
+}, true);
+// Paleta aberta em cima dos scripts: empurra a área de código para a direita, se couber
+ws.addChangeListener(e => {
+  if (e.type !== Blockly.Events.TOOLBOX_ITEM_SELECT || !e.newItem) return;
+  setTimeout(() => {
+    const fo = ws.getToolbox()?.getFlyout?.(); if (!fo?.isVisible?.()) return;
+    const fr = fo.getWorkspace().getParentSvg().getBoundingClientRect(), area = $("#blocklyDiv").getBoundingClientRect();
+    const tops = ws.getTopBlocks(false).map(b => b.getSvgRoot().getBoundingClientRect()).filter(r => r.bottom > area.top && r.top < area.bottom);
+    if (!tops.length) return;
+    const left = Math.min(...tops.map(r => r.left));
+    if (left < fr.right + 12 && area.right - fr.right > 150) ws.scroll(ws.scrollX + (fr.right + 16 - left), ws.scrollY);
+  }, 30);
+});
 let lastPointer = { x: 0, y: 0 };
 $("#blocklyDiv").addEventListener("pointerdown", e => { lastPointer = { x: e.clientX, y: e.clientY }; }, true);
 ws.addChangeListener(e => {
   if (applying) return;
-  if (e.type === Blockly.Events.SELECTED) { room?.presence({ sel: e.newElementId || null }).catch(() => {}); if (e.newElementId) showBlockHelp(ws.getBlockById(e.newElementId)?.type); return; }
-  if (e.type === Blockly.Events.CLICK && e.targetType === "block" && e.blockId) { showBlockHelp(ws.getBlockById(e.blockId)?.type); clickBlock(e.blockId); return; }
-  if (e.type === Blockly.Events.BLOCK_CREATE && e.json?.type) showBlockHelp(e.json.type);
+  if (e.type === Blockly.Events.SELECTED) { room?.presence({ sel: e.newElementId || null }).catch(() => {}); if (e.newElementId) helpFor(ws.getBlockById(e.newElementId)); return; }
+  if (e.type === Blockly.Events.CLICK && e.targetType === "block" && e.blockId) { helpFor(ws.getBlockById(e.blockId)); clickBlock(e.blockId); return; }
+  if (e.type === Blockly.Events.BLOCK_CREATE && e.json?.type) { const nb = ws.getBlockById(e.blockId); nb ? helpFor(nb) : showBlockHelp(e.json.type); }
+  if (e.type === Blockly.Events.BLOCK_CHANGE) { const sel = Blockly.common.getSelected?.(); if (sel?.getDescendants) setTimeout(() => helpFor(sel), 0); }
   if (e.isUiEvent) return;
   scheduleDiff();
 });
@@ -91,6 +114,7 @@ function looseTip(b) {
   tip.textContent = "Este bloco ficou solto! Arraste de novo e solte quando aparecer a sombra cinza: aí ele gruda.";
   tip.style.left = Math.max(8, Math.min(innerWidth - 268, box.left)) + "px"; tip.style.top = Math.min(innerHeight - 80, box.bottom + 8) + "px";
   document.body.append(tip); setTimeout(() => tip.remove(), 4500);
+  addEventListener("scroll", () => tip.remove(), { once: true, capture: true });
   narrate("Um bloco ficou solto, sem encaixar. Blocos soltos não rodam: arraste até ele grudar no de cima.");
 }
 // Clicar num script roda (ou para) só ele; clicar num bloco de valor mostra o valor
@@ -194,7 +218,7 @@ function createVar(name, local) {
   const id = uid(), v = { name, value: 0, order: Date.now(), shown: true };
   if (local && curDoc()) { updateSprite(curSid, { vars: { [id]: v } }); rt.targets.filter(t => t.sid === curSid).forEach(t => t.vars.set(name, 0)); }
   else { updateMeta({ vars: { [id]: v } }); rt.vars.set(name, 0); }
-  refreshToolbox(); renderMonitors(); renderVarList();
+  refreshToolbox("Variáveis"); renderMonitors(); renderVarList();
   narrate(`Variável “${name}” criada. Use “definir … como” para guardar um valor e “adicionar … a” para somar.`);
 }
 function createList(name, local) {
@@ -202,12 +226,12 @@ function createList(name, local) {
   const id = uid(), v = { name, items: [], order: Date.now(), shown: true };
   if (local && curDoc()) { updateSprite(curSid, { lists: { [id]: v } }); rt.targets.filter(t => t.sid === curSid).forEach(t => t.lists.set(name, [])); }
   else { updateMeta({ lists: { [id]: v } }); rt.lists.set(name, []); }
-  refreshToolbox(); renderMonitors(); renderVarList();
+  refreshToolbox("Listas"); renderMonitors(); renderVarList();
 }
 function createMsg(name) {
   name = name.trim(); if (!name) return;
   if (!live(project.meta.msgs).some(([, m]) => m.name === name)) updateMeta({ msgs: { [uid()]: { name, order: Date.now() } } });
-  refreshToolbox();
+  refreshToolbox("Eventos");
 }
 // Criador de blocos (Meus Blocos), no mesmo espírito do Scratch
 function openProcMaker() {
@@ -250,14 +274,27 @@ function createProc(spec, warp) {
 Blockly.ContextMenuRegistry.registry.register({
   id: "bab_explicar", scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK, weight: -2,
   displayText: () => "Explicar este script (tutor)",
-  preconditionFn: () => sample ? "enabled" : "hidden",
+  preconditionFn: scope => sample && !scope.block.isInFlyout ? "enabled" : "hidden",
   callback: scope => { const root = scope.block.getRootBlock(); openHelp("tutor"); askTutor(`Explique, passo a passo e em palavras simples, o que este script faz:\n\n${scriptText(saveBlock(root))}`); },
 });
 Blockly.ContextMenuRegistry.registry.register({
   id: "bab_copiar_ator", scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK, weight: -1,
   displayText: () => "Copiar este script para outro ator…",
-  preconditionFn: () => spriteList().length > 0 ? "enabled" : "hidden",
+  preconditionFn: scope => spriteList().length > 0 && !scope.block.isInFlyout ? "enabled" : "hidden",
   callback: scope => copyScriptTo(saveBlock(scope.block.getRootBlock())),
+});
+// “Duplicar” copia o bloco e tudo o que está embaixo dele (como no Scratch), não só o bloco
+Blockly.ContextMenuRegistry.registry.unregister("blockDuplicate");
+Blockly.ContextMenuRegistry.registry.register({
+  id: "blockDuplicate", scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK, weight: 1,
+  displayText: scope => scope.block.getNextBlock() ? "Duplicar (com os blocos de baixo)" : "Duplicar",
+  preconditionFn: scope => scope.block.isDeletable() && scope.block.isMovable() && !scope.block.isInFlyout ? "enabled" : "hidden",
+  callback: scope => {
+    const json = Blockly.serialization.blocks.save(scope.block, { addNextBlocks: true, saveIds: false });
+    const xy = scope.block.getRelativeToSurfaceXY(), h = scope.block.getHeightWidth().height; json.x = xy.x; json.y = xy.y + h + 28;
+    let copy; Blockly.Events.setGroup(true); try { copy = Blockly.serialization.blocks.append(json, ws, { recordUndo: true }); } finally { Blockly.Events.setGroup(false); }
+    if (copy) { Blockly.common.setSelected(copy); helpFor(copy); narrate("Duplicado: a cópia está logo embaixo. Se não queria, clique em ↶ Desfazer."); }
+  },
 });
 function copyScriptTo(json) {
   const targets = [[STAGE, "Palco"], ...spriteList().filter(([id]) => id !== curSid).map(([id, s]) => [id, s.name])];

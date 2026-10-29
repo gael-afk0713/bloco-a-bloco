@@ -23,7 +23,7 @@ function diagnose() {
   const out = [], add = (kind, sid, blockId, title, text) => out.push({ kind, sid, blockId, title, text });
   const scripts = [...project.scripts.values()].filter(s => s.block && (s.sprite === STAGE || project.sprites.get(s.sprite) && !project.sprites.get(s.sprite).deleted));
   if (!scripts.length) { add("problem", null, null, "Ainda não há nenhum bloco", "Comece em Eventos: arraste “quando ▶ for clicado” e encaixe blocos embaixo. Se quiser ajuda, faça a primeira missão na aba Lições."); return out; }
-  const sent = new Set(), received = new Map(), varsChanged = new Set(), varsRead = new Map(), touchNames = [];
+  const sent = new Set(), received = new Map(), varsChanged = new Set(), varsRead = new Map(), touchNames = [], varsAdded = new Map(), varsReset = new Set();
   let hats = 0, keyHats = false;
   for (const s of scripts) {
     const top = s.block, d = DEF[top.type];
@@ -49,6 +49,8 @@ function diagnose() {
       if (tp === "ev_broadcast" || tp === "ev_broadcastwait") sent.add(b.fields?.MSG);
       if (tp === "ev_receive") received.set(b.fields?.MSG, { sid: s.sprite, id: b.id });
       if (["var_set", "var_change", "ct_foreach"].includes(tp)) varsChanged.add(b.fields?.VAR);
+      if (tp === "var_change" && !varsAdded.has(b.fields?.VAR)) varsAdded.set(b.fields?.VAR, { sid: s.sprite, id: b.id });
+      if (tp === "var_set" && top.type === "ev_flag") varsReset.add(b.fields?.VAR);
       if (tp === "var_get" && !varsRead.has(b.fields?.VAR)) varsRead.set(b.fields?.VAR, { sid: s.sprite, id: b.id });
       if (tp === "sn_touching") touchNames.push({ name: b.fields?.OBJ, sid: s.sprite, id: b.id });
       if (tp === "mv_move" && !loops.length && numIn(b, "STEPS") > 0 && numIn(b, "STEPS") <= 15 && chainTypes(top).filter(t => t === "mv_move").length === 1 && top.type === "ev_flag")
@@ -59,6 +61,7 @@ function diagnose() {
   for (const m of sent) if (m && !received.has(m)) add("problem", null, null, `Ninguém recebe a mensagem “${m}”`, `Algum bloco transmite “${m}”, mas nenhum ator tem “quando eu receber ${m}”. Coloque esse evento no ator que deve reagir.`);
   for (const [m, at] of received) if (m && !sent.has(m)) add("problem", at.sid, at.id, `Ninguém transmite “${m}”`, `Este script espera a mensagem “${m}”, mas nenhum bloco “transmitir ${m}” existe. Ele nunca vai começar.`);
   for (const [v, at] of varsRead) if (v && !varsChanged.has(v)) add("tip", at.sid, at.id, `A variável “${v}” nunca muda`, `Nenhum bloco “definir ${v} como” ou “adicionar … a ${v}” existe, então ela fica sempre com o mesmo valor.`);
+  for (const [v, at] of varsAdded) if (v && !varsReset.has(v)) add("tip", at.sid, at.id, `“${v}” não volta a 0 quando o jogo começa`, `Nenhum “quando ▶ for clicado” tem “definir ${v} como 0”, então a contagem continua de onde parou na última vez. Coloque esse bloco (Variáveis) logo embaixo do “quando ▶ for clicado”.`);
   const names = new Set(spriteList().map(([, s]) => s.name));
   for (const t of touchNames) if (t.name && !t.name.startsWith("_") && !names.has(t.name)) add("problem", t.sid, t.id, `Não existe ator chamado “${t.name}”`, "Este “tocando em” procura um ator que foi apagado ou mudou de nome. Clique na setinha ▾ e escolha de novo.");
   for (const [sid, sp] of spriteList()) {

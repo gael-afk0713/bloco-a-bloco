@@ -116,7 +116,8 @@ cv.addEventListener("pointerdown", e => {
     if (!t.visible || !pointHits(t, p.x, p.y)) continue;
     const ths = fireFor(t, "ev_click"); if (ths.length) lessonRan.click = true;
     if ((!t.clone && !document.body.classList.contains("player")) || t.draggable) { dragState = { t, dx: p.x - t.x, dy: p.y - t.y, moved: false }; cv.setPointerCapture(e.pointerId); }
-    if (!t.clone && !ths.length && t.sid !== curSid && !document.body.classList.contains("player")) selectSprite(t.sid);
+    // No Devagar/Passo a passo, arrastar um ator não troca o código mostrado (senão o destaque some)
+    if (!t.clone && !ths.length && t.sid !== curSid && !document.body.classList.contains("player") && !(rt.running && $("#speedSel").value !== "normal")) selectSprite(t.sid);
     return;
   }
   if (rt.stage) fireFor(rt.stage, "ev_stageclick");
@@ -150,6 +151,7 @@ function explain(b, th) {
     case "mv_move": { const n = num(v("STEPS")), r = (90 - t.dir) * Math.PI / 180; return `${who} anda ${n} passos olhando para ${dirTxt(t.dir)}: vai de (${Math.round(t.x)}, ${Math.round(t.y)}) para (${Math.round(t.x + n * Math.cos(r))}, ${Math.round(t.y + n * Math.sin(r))}).`; }
     case "mv_turnr": return `${who} gira ${v("DEG")}° no sentido do relógio.`;
     case "mv_turnl": return `${who} gira ${v("DEG")}° no sentido contrário ao relógio.`;
+    case "mv_goto": { const to = F(b, "TO"); return `${who} pula para ${to === "_random_" ? "um lugar sorteado do palco" : to === "_mouse_" ? "onde está o ponteiro do mouse" : `onde está ${to}`}.`; }
     case "mv_gotoxy": return `${who} pula para x: ${v("X")}, y: ${v("Y")}. O x é a posição na horizontal e o y na vertical.`;
     case "mv_changex": return `x muda de ${Math.round(t.x)} para ${Math.round(t.x + num(v("DX")))}. ${num(v("DX")) >= 0 ? "Vai para a direita." : "Vai para a esquerda."}`;
     case "mv_changey": return `y muda de ${Math.round(t.y)} para ${Math.round(t.y + num(v("DY")))}. ${num(v("DY")) >= 0 ? "Sobe." : "Desce."}`;
@@ -301,12 +303,13 @@ function duplicateSprite(sid) {
 // =====================================================================
 // Abas Fantasias/Cenários e Sons
 // =====================================================================
-let curTab = "code";
+let curTab = "code", codeScroll = null; // a área de código volta para onde estava ao voltar da outra aba
 document.querySelectorAll("#editorCard .tabs [data-tab]").forEach(b => b.addEventListener("click", () => {
+  if (curTab === "code") codeScroll = [ws.scrollX, ws.scrollY];
   curTab = b.dataset.tab;
   document.querySelectorAll("#editorCard .tabs [data-tab]").forEach(x => x.setAttribute("aria-selected", x === b));
   $("#paneCode").hidden = curTab !== "code"; $("#paneCostumes").hidden = curTab !== "costumes"; $("#paneSounds").hidden = curTab !== "sounds"; $("#paneText").hidden = curTab !== "text";
-  if (curTab === "code") setTimeout(() => Blockly.svgResize(ws), 0); else { if (curTab === "text") diffWorkspace(); renderAssets(); }
+  if (curTab === "code") setTimeout(() => { Blockly.svgResize(ws); if (codeScroll) ws.scroll(...codeScroll); }, 0); else { if (curTab === "text") diffWorkspace(); renderAssets(); }
 }));
 function renderAssets() { if (curTab === "costumes") renderCostumes(); else if (curTab === "sounds") renderSounds(); else if (curTab === "text") renderTextCode(); }
 function renderCostumes() {
