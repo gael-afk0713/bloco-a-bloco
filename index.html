@@ -57,11 +57,14 @@ button { cursor: pointer; }
 .muted { color: var(--muted); }
 
 /* Topo e menu */
+.short { display: none; }
+@media (max-width: 1400px) { .long { display: none; } .short { display: inline; } }
+.level-wrap { display: inline-flex; gap: 4px; align-items: center; }
 .top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 10px; }
 .brand h1 { font-size: 1.5rem; } .brand h1 span { color: var(--accent); }
 .menu { display: flex; gap: 4px; flex-wrap: wrap; }
 .menu .btn { font-weight: 600; font-size: .88rem; }
-#projTitle { border: 1px solid transparent; background: transparent; font-family: var(--f-display); font-size: 1.05rem; padding: 3px 8px; border-radius: 8px; min-width: 0; width: 14em; max-width: 100%; }
+#projTitle { border: 1px solid transparent; background: transparent; font-family: var(--f-display); font-size: 1.05rem; padding: 3px 8px; border-radius: 8px; min-width: 7em; width: 14em; max-width: 100%; flex: 0 1 14em; }
 #projTitle:hover, #projTitle:focus { border-color: var(--line); background: var(--panel); }
 .people { margin-left: auto; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .person { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px 2px 2px; border-radius: 999px; background: var(--panel); border: 2px solid var(--pc, var(--line)); font-size: .82rem; }
@@ -106,6 +109,8 @@ button { cursor: pointer; }
 .readout { display: flex; flex-wrap: wrap; gap: 2px 12px; font-family: var(--f-mono); font-size: .76rem; color: var(--muted); padding: 6px 12px 0; font-variant-numeric: tabular-nums; }
 .narr { margin: 8px 10px 10px; border-left: 4px solid var(--glow); background: var(--panel-2); border-radius: 0 8px 8px 0; padding: 8px 10px; min-height: 52px; font-size: .92rem; }
 .narr p { margin: 2px 0 0; }
+.narr p.pulse { animation: narrpulse .7s ease-out; }
+@keyframes narrpulse { from { background: color-mix(in srgb, var(--glow) 35%, transparent); } to { background: transparent; } }
 
 /* Modo jogador */
 body.player #editorCard, body.player .side > *:not(:first-child), body.player .narr, body.player .readout { display: none; }
@@ -149,7 +154,8 @@ body.player .side { max-width: min(960px, calc((100vh - 120px) * 4 / 3)); width:
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
 .code-bar .check { display: inline-flex; gap: 5px; align-items: center; font-size: .86rem; color: var(--muted); }
 .code-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 260px; min-height: 0; }
-pre.code { margin: 0; padding: 14px 16px; overflow: auto; font-family: var(--f-mono); font-size: .84rem; line-height: 1.65; max-height: calc(100vh - 190px); tab-size: 4; background: var(--panel); }
+@media (max-width: 1100px) { .code-wrap { grid-template-columns: minmax(0, 1fr); } .code-guide { border-left: 0; border-top: 1px solid var(--line); max-height: none; } }
+pre.code { margin: 0; padding: 14px 16px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--f-mono); font-size: .84rem; line-height: 1.65; max-height: calc(100vh - 190px); tab-size: 4; background: var(--panel); }
 pre.code .kw { color: #c157c4; font-weight: 600; } pre.code .st { color: #1f8a4c; } pre.code .nu { color: #d4691a; } pre.code .cm { color: var(--muted); font-style: italic; } pre.code .fn { color: var(--accent); }
 .code-guide { border-left: 1px solid var(--line); padding: 12px; font-size: .86rem; overflow: auto; max-height: calc(100vh - 190px); display: flex; flex-direction: column; gap: 10px; }
 .code-guide h3 { font-size: 1rem; }
@@ -247,7 +253,8 @@ textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .level-pick select { border: 2px solid var(--accent); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 3px 6px; font-weight: 700; font-size: .84rem; }
 /* Nível 1: esconde o que ainda não faz sentido para quem está começando */
-body[data-level="1"] [data-tab="text"], body[data-level="1"] #mExport { display: none; }
+body[data-level="1"] #mExport { display: none; }
+.code-gate { padding: 28px 24px; display: flex; flex-direction: column; gap: 12px; max-width: 520px; }
 
 /* Missões guiadas: cartão com o passo e uma mãozinha que mostra onde clicar ou arrastar */
 #paneCode { position: relative; }
@@ -297,9 +304,9 @@ body[data-level="1"] [data-tab="text"], body[data-level="1"] #mExport { display:
   <div class="brand"><h1>Bloco <span>a</span> Bloco</h1></div>
   <nav class="menu" aria-label="Arquivo">
     <button class="btn small" id="mNew">Novo</button>
-    <button class="btn small" id="mOpen" title="Abre um projeto salvo (.json) ou um projeto do Scratch (.sb3)">Abrir / importar .sb3</button>
-    <button class="btn small" id="mSave">Salvar no computador</button>
-    <button class="btn small" id="mExport" title="Gera um arquivo .sb3 que abre no Scratch (Arquivo → Carregar do seu computador)">Exportar para o Scratch</button>
+    <button class="btn small" id="mOpen" title="Abre um projeto salvo (.json) ou um projeto do Scratch (.sb3)"><span class="long">Abrir / importar .sb3</span><span class="short">Abrir</span></button>
+    <button class="btn small" id="mSave" title="Baixa o projeto para o seu computador"><span class="long">Salvar no computador</span><span class="short">Salvar</span></button>
+    <button class="btn small" id="mExport" title="Gera um arquivo .sb3 que abre no Scratch (Arquivo → Carregar do seu computador)"><span class="long">Exportar para o Scratch</span><span class="short">Exportar .sb3</span></button>
   </nav>
   <input id="projTitle" aria-label="Nome do projeto" value="Meu projeto" maxlength="60">
   <div class="people" id="people"><span class="mode-chip">Carregando…</span></div>
@@ -315,9 +322,11 @@ body[data-level="1"] [data-tab="text"], body[data-level="1"] #mExport { display:
       <button role="tab" data-tab="sounds" aria-selected="false">Sons</button>
       <button role="tab" data-tab="text" aria-selected="false">Python / Portugol</button>
       <span class="spacer"></span>
+      <button class="btn small" id="undoBtn" title="Desfazer a última mudança nos blocos (Ctrl+Z)">↶ Desfazer</button>
       <button class="btn small" id="missionsBtn" title="Missões com a mãozinha: ela mostra o que arrastar">🎯 Missões</button>
       <label class="editing"><input type="checkbox" id="tipsChk" checked> Descrições</label>
-      <label class="editing level-pick" title="Cada nível mostra só os blocos daquele momento. Escolha “Sem níveis” para ver todos."><span class="sr-only">Nível</span><select id="levelSel" aria-label="Nível de blocos"></select></label>
+      <span class="level-wrap"><label class="editing level-pick" title="Cada nível mostra só os blocos daquele momento. Escolha “Sem níveis” para ver todos."><span class="sr-only">Nível</span><select id="levelSel" aria-label="Nível de blocos"></select></label>
+      <button class="btn small" id="levelHelp" aria-label="O que são os níveis?" title="O que são os níveis?">?</button></span>
     </div>
     <div id="paneCode"><div class="block-help" id="blockHelp" aria-live="polite"><span class="label">Sobre o bloco</span><span id="blockHelpText">Clique em qualquer bloco para ver o que ele faz e um exemplo.</span></div><div id="blocklyDiv"></div></div>
     <div id="paneText" hidden></div>
@@ -420,7 +429,10 @@ const IN_CLAUDE = !!(window.claude && window.claude.use);
 const now = () => performance.now();
 function deepMerge(a, b) { const o = { ...(a || {}) }; for (const k in b) o[k] = b[k] && typeof b[k] === "object" && !Array.isArray(b[k]) && o[k] && typeof o[k] === "object" && !Array.isArray(o[k]) ? deepMerge(o[k], b[k]) : b[k]; return o; }
 function uniqueName(base, taken) { let n = base, i = 2; while (taken.includes(n)) n = base + i++; return n; }
-function narrate(t) { $("#narr").textContent = t; }
+function narrate(t, pulse) {
+  const el = $("#narr"); el.textContent = t;
+  if (pulse) { el.classList.remove("pulse"); void el.offsetWidth; el.classList.add("pulse"); }
+}
 function showBanner(t) { const b = $("#banner"); b.textContent = t; b.hidden = false; }
 function hexToRgb(h) { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || "")); if (!m) return [0, 0, 0]; const n = parseInt(m[1], 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
 function rgbToHsv(r, g, b) { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let h = 0; if (d) h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; return [h, mx ? d / mx : 0, mx]; }
@@ -737,7 +749,7 @@ function saveMedia(url) { const id = uid(); media.set(id, url); write("media/" +
 
 function newSpriteDoc(name, costumes, extra = {}) {
   const taken = spriteList().map(([, s]) => s.name);
-  return { name: uniqueName(name, taken), order: Date.now(), x: 0, y: 0, dir: 90, size: 100, visible: true, rot: "all", draggable: false, costume: 0, costumes, sounds: { [uid()]: { name: "Pop", kind: "synth", ref: "pop", order: 0 } }, vars: {}, lists: {}, procs: {}, ...extra };
+  return { name: uniqueName(name, taken), order: Date.now(), x: 0, y: 0, dir: 90, size: 100, visible: true, rot: "lr", draggable: false, costume: 0, costumes, sounds: { [uid()]: { name: "Pop", kind: "synth", ref: "pop", order: 0 } }, vars: {}, lists: {}, procs: {}, ...extra };
 }
 function addSpriteDoc(doc) {
   const id = uid();
@@ -936,6 +948,11 @@ let pendingRoom = "";
 // =====================================================================
 // Catálogo de blocos (todos os do Scratch 3 + extras para jogos)
 // =====================================================================
+// Menu do botão direito em português simples (a tradução do Blockly usa “Deletar”, “Colapsar”…)
+Object.assign(Blockly.Msg, { DELETE_BLOCK: "Apagar bloco", DELETE_X_BLOCKS: "Apagar %1 blocos", COLLAPSE_BLOCK: "Recolher bloco", EXPAND_BLOCK: "Abrir bloco",
+  DISABLE_BLOCK: "Desativar bloco", ENABLE_BLOCK: "Ativar bloco", COLLAPSE_ALL: "Recolher todos", EXPAND_ALL: "Abrir todos", CLEAN_UP: "Arrumar os blocos",
+  DELETE_ALL_BLOCKS: "Apagar todos os %1 blocos?", ADD_COMMENT: "Adicionar comentário", REMOVE_COMMENT: "Tirar comentário", HELP: "Ajuda", UNDO: "Desfazer", REDO: "Refazer",
+  INLINE_INPUTS: "Espaços na mesma linha", EXTERNAL_INPUTS: "Espaços um embaixo do outro" });
 const CAT = {
   mv: ["Movimento", "#4a7fe0"], lk: ["Aparência", "#8a55d6"], snd: ["Som", "#c157c4"], ev: ["Eventos", "#e3a400"],
   ct: ["Controle", "#ec8a24"], sn: ["Sensores", "#35a3d4"], op: ["Operadores", "#3aae5a"], var: ["Variáveis", "#ef6a2c"],
@@ -1250,7 +1267,14 @@ const LEVELS = [
 ];
 const curLevel = () => LEVELS.find(l => String(l.n) === $("#levelSel")?.value) || LEVELS[3];
 // Com a área de código estreita, descrições mais curtas para a paleta aberta não cobrir os blocos
-const tipMax = () => { const w = $("#blocklyDiv")?.clientWidth || innerWidth; return w < 700 ? 30 : w < 1000 ? 40 : 62; };
+const tipMax = () => { const w = $("#blocklyDiv")?.clientWidth || innerWidth; return w < 700 ? 26 : w < 1000 ? 38 : 62; };
+// A descrição curta quebra em até duas linhas (cada uma vira um rótulo na paleta)
+function tipLines(tip, keep = 2, whole = false) {
+  const max = tipMax(), words = (whole ? tip : shortTip(tip, max * keep)).split(" "), lines = [""];
+  for (const w of words) { if ((lines.at(-1) + " " + w).trim().length > max && lines.at(-1)) lines.push(""); lines[lines.length - 1] = (lines.at(-1) + " " + w).trim(); }
+  if (lines.length > keep) { lines.length = keep; lines[keep - 1] = lines[keep - 1].replace(/[.,;:]?$/, "…"); } // não corta calado
+  return lines.flatMap((text, i) => [...(i ? [{ kind: "sep", gap: 2 }] : []), { kind: "label", text, "web-class": "bab-tip" }]);
+}
 function buildToolbox() {
   const lv = curLevel(), stage = curSid === STAGE;
   const contents = [];
@@ -1273,16 +1297,27 @@ function buildToolbox() {
     const blocks = Object.keys(DEF).filter(ok);
     if (!blocks.length && !items.length) continue;
     const tips = $("#tipsChk")?.checked !== false;
-    const withTips = blocks.flatMap(t => tips ? [toolboxBlock(t), { kind: "label", text: shortTip(DEF[t].tip, tipMax()), "web-class": "bab-tip" }] : [toolboxBlock(t)]);
+    const withTips = blocks.flatMap(t => tips ? [toolboxBlock(t), ...tipLines(DEF[t].tip)] : [toolboxBlock(t)]);
     contents.push({ kind: "category", name, categorystyle: cat + "_category", contents: [...items, ...withTips] });
   }
   // Os níveis escondem blocos; esta categoria avisa que existem mais e sobe de nível com um clique
   const next = { 1: 2, 2: 3, 3: 0 }[lv.n];
+  if (next) {
+    const nl = LEVELS.find(l => l.n === next), shown = new Set(contents.map(c => c.name));
+    for (const [cat, [name]] of Object.entries(CAT)) {
+      if (shown.has(name) || cat === "proc" && next !== 3) continue;
+      if (!Object.keys(DEF).some(t => DEF[t].cat === cat && !DEF[t].hidden && nl.ok(t) && !(stage && !DEF[t].stageOk) && !(!stage && !DEF[t].spriteOk))) continue;
+      contents.push({ kind: "category", name: "🔒 " + name, colour: "#8a96a3", contents: [
+        { kind: "label", text: `${name} chega no ${nl.name.split(" · ")[0]}.`, "web-class": "bab-tip" },
+        { kind: "button", text: `Subir para o ${nl.name.split(" · ")[0]}`, callbackKey: "LEVEL_UP" },
+      ] });
+    }
+  }
   if (next !== undefined) {
     const nl = LEVELS.find(l => l.n === next);
     contents.push({ kind: "category", name: "Mais blocos", colour: "#8a96a3", contents: [
       { kind: "label", text: `Você está no ${lv.name.split(" · ")[0]}.`, "web-class": "bab-tip" },
-      { kind: "label", text: next ? nl.about : "Ver todos os blocos, como no Scratch.", "web-class": "bab-tip" },
+      ...tipLines(next ? nl.about : "Ver todos os blocos, como no Scratch.", 4, true),
       { kind: "button", text: next ? `Subir para o ${nl.name.split(" · ")[0]}` : "Mostrar todos os blocos", callbackKey: "LEVEL_UP" },
     ] });
   }
@@ -1309,7 +1344,8 @@ try {
   // Quem já usava o Bloco a Bloco continua vendo tudo; quem chega agora começa no Nível 1
   let lv = localStorage.getItem("bab-nivel");
   if (lv === null) {
-    lv = localStorage.getItem("bab-simples") === "1" ? "3" : localStorage.getItem("bab-projeto-v3") ? "0" : "1";
+    let hasWork = false; try { hasWork = Object.keys(JSON.parse(localStorage.getItem("bab-projeto-v3") || "{}")).some(k => k.startsWith("scripts/")); } catch (_) {}
+    lv = localStorage.getItem("bab-simples") === "1" ? "3" : hasWork ? "0" : "1";
     // Grava já: senão, ao recarregar, o projeto salvo faria o nível virar “Sem níveis”
     localStorage.setItem("bab-nivel", lv);
   }
@@ -1329,7 +1365,12 @@ let lastTipMax = tipMax();
 new ResizeObserver(() => { Blockly.svgResize(ws); if (tipMax() !== lastTipMax) { lastTipMax = tipMax(); refreshToolbox(); } }).observe($("#blocklyDiv"));
 let toolboxTimer = null;
 // Atualiza a caixa de ferramentas e a categoria aberta (para uma variável nova aparecer na hora)
-const refreshToolbox = () => { clearTimeout(toolboxTimer); toolboxTimer = setTimeout(() => { ws.updateToolbox(buildToolbox()); try { ws.getToolbox()?.refreshSelection?.(); } catch (_) {} }, 60); };
+// A variável nova só chega ao projeto depois de salva: refaz a paleta de novo um pouco depois
+const openCategory = name => { try { const tb = ws.getToolbox(), it = tb.getToolboxItems().find(i => i.getName?.() === name); if (it) { tb.clearSelection(); tb.setSelectedItem(it); } } catch (_) {} };
+const refreshToolbox = reopen => {
+  const go = () => { ws.updateToolbox(buildToolbox()); try { if (reopen) openCategory(reopen); else ws.getToolbox()?.refreshSelection?.(); } catch (_) {} };
+  clearTimeout(toolboxTimer); toolboxTimer = setTimeout(() => { go(); toolboxTimer = setTimeout(go, 400); }, 60);
+};
 
 // =====================================================================
 // Exemplos fáceis de cada bloco (aparecem em “Sobre o bloco”)
@@ -1485,11 +1526,11 @@ const EXAMPLES = {
 };
 // Primeira frase da dica, para caber embaixo do bloco na paleta
 function shortTip(t, max = 62) { const s = String(t || "").split(/(?<=\.)\s/)[0].replace(/\s*\(Extra[^)]*\)\s*/, ""); return s.length > max ? s.slice(0, max - 2).trimEnd() + "…" : s; }
-function showBlockHelp(type) {
+function showBlockHelp(type, json, label) {
   if (!type || !DEF[type]) return;
   const d = DEF[type];
   const cat = CAT[d.cat]?.[0] || "";
-  const name = type.startsWith("pc_") || type.startsWith("pd_") ? "seu bloco" : `“${blockText({ type, fields: {}, inputs: {} }).replace(/\(\)|<>|\[\]/g, "…")}”`;
+  const name = label ? `“${label}”` : type.startsWith("pc_") || type.startsWith("pd_") ? "seu bloco" : `“${blockText({ type, fields: json?.fields || {}, inputs: json?.inputs || {} }).replace(/\(\)|<>|\[\]/g, "…")}”`;
   const ex = EXAMPLES[type] || (type.startsWith("pc_") ? "Um bloco que você criou em Meus Blocos. O que ele faz está embaixo do “definir” dele." : type.startsWith("pd_") ? "Monte embaixo deste bloco o que o seu bloco deve fazer." : "");
   const box = $("#blockHelpText");
   box.innerHTML = `<b>${esc(name)}</b> <span class="muted">(${esc(cat)})</span> — ${esc(d.tip)}${ex ? ` <span class="muted">${esc(ex)}</span>` : ""}`;
@@ -1531,7 +1572,7 @@ function loadWorkspace() {
   applying = true;
   Blockly.Events.disable();
   try {
-    ws.clear(); cache.clear();
+    ws.clear(); cache.clear(); ws.clearUndo();
     for (const [id, s] of project.scripts) {
       if (s.sprite !== curSid || !s.block || !knownTypes(s.block)) continue;
       collectExtras(s.block);
@@ -1555,13 +1596,36 @@ Blockly.Gesture.prototype.doBlockClick = function () {
   if (this.flyout?.autoClose && this.targetBlock) { showBlockHelp((this.targetBlock.getRootBlock?.() || this.targetBlock).type); return; }
   return blocklyBlockClick.call(this);
 };
+// Na área de código, a ajuda mostra o bloco com os valores escolhidos (“quando a tecla seta para a direita…”)
+function helpFor(b) {
+  if (!b) return;
+  let label = null; try { label = b.toString(90, "…").replace(/\s+/g, " ").trim(); } catch (_) {}
+  showBlockHelp(b.type, null, label);
+}
+// Clicar fora da área de código fecha o número em edição (e a paleta aberta)
+document.addEventListener("pointerdown", e => {
+  if (!e.target.closest?.("#blocklyDiv, .blocklyWidgetDiv, .blocklyDropDownDiv, .blocklyTooltipDiv")) try { ws.hideChaff(false); } catch (_) {}
+}, true);
+// Paleta aberta em cima dos scripts: empurra a área de código para a direita, se couber
+ws.addChangeListener(e => {
+  if (e.type !== Blockly.Events.TOOLBOX_ITEM_SELECT || !e.newItem) return;
+  setTimeout(() => {
+    const fo = ws.getToolbox()?.getFlyout?.(); if (!fo?.isVisible?.()) return;
+    const fr = fo.getWorkspace().getParentSvg().getBoundingClientRect(), area = $("#blocklyDiv").getBoundingClientRect();
+    const tops = ws.getTopBlocks(false).map(b => b.getSvgRoot().getBoundingClientRect()).filter(r => r.bottom > area.top && r.top < area.bottom);
+    if (!tops.length) return;
+    const left = Math.min(...tops.map(r => r.left));
+    if (left < fr.right + 12 && area.right - fr.right > 150) ws.scroll(ws.scrollX + (fr.right + 16 - left), ws.scrollY);
+  }, 30);
+});
 let lastPointer = { x: 0, y: 0 };
 $("#blocklyDiv").addEventListener("pointerdown", e => { lastPointer = { x: e.clientX, y: e.clientY }; }, true);
 ws.addChangeListener(e => {
   if (applying) return;
-  if (e.type === Blockly.Events.SELECTED) { room?.presence({ sel: e.newElementId || null }).catch(() => {}); if (e.newElementId) showBlockHelp(ws.getBlockById(e.newElementId)?.type); return; }
-  if (e.type === Blockly.Events.CLICK && e.targetType === "block" && e.blockId) { showBlockHelp(ws.getBlockById(e.blockId)?.type); clickBlock(e.blockId); return; }
-  if (e.type === Blockly.Events.BLOCK_CREATE && e.json?.type) showBlockHelp(e.json.type);
+  if (e.type === Blockly.Events.SELECTED) { room?.presence({ sel: e.newElementId || null }).catch(() => {}); if (e.newElementId) helpFor(ws.getBlockById(e.newElementId)); return; }
+  if (e.type === Blockly.Events.CLICK && e.targetType === "block" && e.blockId) { helpFor(ws.getBlockById(e.blockId)); clickBlock(e.blockId); return; }
+  if (e.type === Blockly.Events.BLOCK_CREATE && e.json?.type) { const nb = ws.getBlockById(e.blockId); nb ? helpFor(nb) : showBlockHelp(e.json.type); }
+  if (e.type === Blockly.Events.BLOCK_CHANGE) { const sel = Blockly.common.getSelected?.(); if (sel?.getDescendants) setTimeout(() => helpFor(sel), 0); }
   if (e.isUiEvent) return;
   scheduleDiff();
 });
@@ -1588,6 +1652,7 @@ function looseTip(b) {
   tip.textContent = "Este bloco ficou solto! Arraste de novo e solte quando aparecer a sombra cinza: aí ele gruda.";
   tip.style.left = Math.max(8, Math.min(innerWidth - 268, box.left)) + "px"; tip.style.top = Math.min(innerHeight - 80, box.bottom + 8) + "px";
   document.body.append(tip); setTimeout(() => tip.remove(), 4500);
+  addEventListener("scroll", () => tip.remove(), { once: true, capture: true });
   narrate("Um bloco ficou solto, sem encaixar. Blocos soltos não rodam: arraste até ele grudar no de cima.");
 }
 // Clicar num script roda (ou para) só ele; clicar num bloco de valor mostra o valor
@@ -1691,7 +1756,7 @@ function createVar(name, local) {
   const id = uid(), v = { name, value: 0, order: Date.now(), shown: true };
   if (local && curDoc()) { updateSprite(curSid, { vars: { [id]: v } }); rt.targets.filter(t => t.sid === curSid).forEach(t => t.vars.set(name, 0)); }
   else { updateMeta({ vars: { [id]: v } }); rt.vars.set(name, 0); }
-  refreshToolbox(); renderMonitors(); renderVarList();
+  refreshToolbox("Variáveis"); renderMonitors(); renderVarList();
   narrate(`Variável “${name}” criada. Use “definir … como” para guardar um valor e “adicionar … a” para somar.`);
 }
 function createList(name, local) {
@@ -1699,12 +1764,12 @@ function createList(name, local) {
   const id = uid(), v = { name, items: [], order: Date.now(), shown: true };
   if (local && curDoc()) { updateSprite(curSid, { lists: { [id]: v } }); rt.targets.filter(t => t.sid === curSid).forEach(t => t.lists.set(name, [])); }
   else { updateMeta({ lists: { [id]: v } }); rt.lists.set(name, []); }
-  refreshToolbox(); renderMonitors(); renderVarList();
+  refreshToolbox("Listas"); renderMonitors(); renderVarList();
 }
 function createMsg(name) {
   name = name.trim(); if (!name) return;
   if (!live(project.meta.msgs).some(([, m]) => m.name === name)) updateMeta({ msgs: { [uid()]: { name, order: Date.now() } } });
-  refreshToolbox();
+  refreshToolbox("Eventos");
 }
 // Criador de blocos (Meus Blocos), no mesmo espírito do Scratch
 function openProcMaker() {
@@ -1747,14 +1812,27 @@ function createProc(spec, warp) {
 Blockly.ContextMenuRegistry.registry.register({
   id: "bab_explicar", scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK, weight: -2,
   displayText: () => "Explicar este script (tutor)",
-  preconditionFn: () => sample ? "enabled" : "hidden",
+  preconditionFn: scope => sample && !scope.block.isInFlyout ? "enabled" : "hidden",
   callback: scope => { const root = scope.block.getRootBlock(); openHelp("tutor"); askTutor(`Explique, passo a passo e em palavras simples, o que este script faz:\n\n${scriptText(saveBlock(root))}`); },
 });
 Blockly.ContextMenuRegistry.registry.register({
   id: "bab_copiar_ator", scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK, weight: -1,
   displayText: () => "Copiar este script para outro ator…",
-  preconditionFn: () => spriteList().length > 0 ? "enabled" : "hidden",
+  preconditionFn: scope => spriteList().length > 0 && !scope.block.isInFlyout ? "enabled" : "hidden",
   callback: scope => copyScriptTo(saveBlock(scope.block.getRootBlock())),
+});
+// “Duplicar” copia o bloco e tudo o que está embaixo dele (como no Scratch), não só o bloco
+Blockly.ContextMenuRegistry.registry.unregister("blockDuplicate");
+Blockly.ContextMenuRegistry.registry.register({
+  id: "blockDuplicate", scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK, weight: 1,
+  displayText: scope => scope.block.getNextBlock() ? "Duplicar (com os blocos de baixo)" : "Duplicar",
+  preconditionFn: scope => scope.block.isDeletable() && scope.block.isMovable() && !scope.block.isInFlyout ? "enabled" : "hidden",
+  callback: scope => {
+    const json = Blockly.serialization.blocks.save(scope.block, { addNextBlocks: true, saveIds: false });
+    const xy = scope.block.getRelativeToSurfaceXY(), h = scope.block.getHeightWidth().height; json.x = xy.x; json.y = xy.y + h + 28;
+    let copy; Blockly.Events.setGroup(true); try { copy = Blockly.serialization.blocks.append(json, ws, { recordUndo: true }); } finally { Blockly.Events.setGroup(false); }
+    if (copy) { Blockly.common.setSelected(copy); helpFor(copy); narrate("Duplicado: a cópia está logo embaixo. Se não queria, clique em ↶ Desfazer."); }
+  },
 });
 function copyScriptTo(json) {
   const targets = [[STAGE, "Palco"], ...spriteList().filter(([id]) => id !== curSid).map(([id, s]) => [id, s.name])];
@@ -1908,8 +1986,11 @@ let stepToken = 0;
 function* gate(b, th) {
   const mode = $("#speedSel").value;
   if (mode === "normal" || th.warp > 0) return;
-  if (th.target.sid === curSid) ws.highlightBlock(b.id);
-  narrate(explain(b, th));
+  ws.highlightBlock(th.target.sid === curSid ? b.id : null); // bloco de outro ator: não deixa aceso um bloco que não é o narrado
+  // Dentro de um laço, diz em que volta está: assim cada “Próximo” mostra algo novo
+  const lap = th.laps?.at(-1);
+  const other = th.target.sid !== curSid ? `[${spriteName(th.target)}, outro ator: clique nele para ver os blocos] ` : ""; // narração de outro ator: diz de quem é
+  narrate(other + (lap ? `Volta ${lap.i}${lap.n ? " de " + lap.n : ""} do “${lap.kind}”. ` : "") + explain(b, th), true);
   if (mode === "slow") yield* waitSecs(th, .55);
   else { const tk = stepToken; $("#stepBtn").hidden = false; yield* waitFor(th, () => stepToken !== tk || $("#speedSel").value !== "step"); }
 }
@@ -2118,8 +2199,8 @@ function* exec(b, th) {
     case "ev_broadcastwait": { const ths = fire("ev_receive", hb => hb.fields?.MSG === F(b, "MSG")); yield* waitFor(th, () => ths.every(x => x.done)); break; }
     // Controle
     case "ct_wait": yield* waitSecs(th, num(inp(b, "SECS", th))); break;
-    case "ct_repeat": { const n = Math.round(num(inp(b, "TIMES", th))); for (let i = 0; i < n && !th.done; i++) { yield* runStack(sub(b, "SUBSTACK"), th); yield* loopYield(th); } break; }
-    case "ct_forever": while (!th.done) { yield* runStack(sub(b, "SUBSTACK"), th); yield* loopYield(th); } break;
+    case "ct_repeat": { const n = Math.round(num(inp(b, "TIMES", th))), lap = { kind: "repetir", i: 0, n }; (th.laps ||= []).push(lap); try { for (let i = 0; i < n && !th.done; i++) { lap.i = i + 1; yield* runStack(sub(b, "SUBSTACK"), th); yield* loopYield(th); } } finally { th.laps.pop(); } break; }
+    case "ct_forever": { const lap = { kind: "sempre", i: 0 }; (th.laps ||= []).push(lap); try { while (!th.done) { lap.i++; yield* runStack(sub(b, "SUBSTACK"), th); yield* loopYield(th); } } finally { th.laps.pop(); } break; }
     case "ct_if": if (bool(inp(b, "COND", th))) yield* runStack(sub(b, "SUBSTACK"), th); break;
     case "ct_ifelse": yield* runStack(sub(b, bool(inp(b, "COND", th)) ? "SUBSTACK" : "SUBSTACK2"), th); break;
     case "ct_waituntil": yield* waitFor(th, () => bool(inp(b, "COND", th))); break;
@@ -2549,7 +2630,8 @@ cv.addEventListener("pointerdown", e => {
     if (!t.visible || !pointHits(t, p.x, p.y)) continue;
     const ths = fireFor(t, "ev_click"); if (ths.length) lessonRan.click = true;
     if ((!t.clone && !document.body.classList.contains("player")) || t.draggable) { dragState = { t, dx: p.x - t.x, dy: p.y - t.y, moved: false }; cv.setPointerCapture(e.pointerId); }
-    if (!t.clone && !ths.length && t.sid !== curSid && !document.body.classList.contains("player")) selectSprite(t.sid);
+    // No Devagar/Passo a passo, arrastar um ator não troca o código mostrado (senão o destaque some)
+    if (!t.clone && !ths.length && t.sid !== curSid && !document.body.classList.contains("player") && !(rt.running && $("#speedSel").value !== "normal")) selectSprite(t.sid);
     return;
   }
   if (rt.stage) fireFor(rt.stage, "ev_stageclick");
@@ -2583,6 +2665,7 @@ function explain(b, th) {
     case "mv_move": { const n = num(v("STEPS")), r = (90 - t.dir) * Math.PI / 180; return `${who} anda ${n} passos olhando para ${dirTxt(t.dir)}: vai de (${Math.round(t.x)}, ${Math.round(t.y)}) para (${Math.round(t.x + n * Math.cos(r))}, ${Math.round(t.y + n * Math.sin(r))}).`; }
     case "mv_turnr": return `${who} gira ${v("DEG")}° no sentido do relógio.`;
     case "mv_turnl": return `${who} gira ${v("DEG")}° no sentido contrário ao relógio.`;
+    case "mv_goto": { const to = F(b, "TO"); return `${who} pula para ${to === "_random_" ? "um lugar sorteado do palco" : to === "_mouse_" ? "onde está o ponteiro do mouse" : `onde está ${to}`}.`; }
     case "mv_gotoxy": return `${who} pula para x: ${v("X")}, y: ${v("Y")}. O x é a posição na horizontal e o y na vertical.`;
     case "mv_changex": return `x muda de ${Math.round(t.x)} para ${Math.round(t.x + num(v("DX")))}. ${num(v("DX")) >= 0 ? "Vai para a direita." : "Vai para a esquerda."}`;
     case "mv_changey": return `y muda de ${Math.round(t.y)} para ${Math.round(t.y + num(v("DY")))}. ${num(v("DY")) >= 0 ? "Sobe." : "Desce."}`;
@@ -2734,12 +2817,13 @@ function duplicateSprite(sid) {
 // =====================================================================
 // Abas Fantasias/Cenários e Sons
 // =====================================================================
-let curTab = "code";
+let curTab = "code", codeScroll = null; // a área de código volta para onde estava ao voltar da outra aba
 document.querySelectorAll("#editorCard .tabs [data-tab]").forEach(b => b.addEventListener("click", () => {
+  if (curTab === "code") codeScroll = [ws.scrollX, ws.scrollY];
   curTab = b.dataset.tab;
   document.querySelectorAll("#editorCard .tabs [data-tab]").forEach(x => x.setAttribute("aria-selected", x === b));
   $("#paneCode").hidden = curTab !== "code"; $("#paneCostumes").hidden = curTab !== "costumes"; $("#paneSounds").hidden = curTab !== "sounds"; $("#paneText").hidden = curTab !== "text";
-  if (curTab === "code") setTimeout(() => Blockly.svgResize(ws), 0); else { if (curTab === "text") diffWorkspace(); renderAssets(); }
+  if (curTab === "code") setTimeout(() => { Blockly.svgResize(ws); if (codeScroll) ws.scroll(...codeScroll); }, 0); else { if (curTab === "text") diffWorkspace(); renderAssets(); }
 }));
 function renderAssets() { if (curTab === "costumes") renderCostumes(); else if (curTab === "sounds") renderSounds(); else if (curTab === "text") renderTextCode(); }
 function renderCostumes() {
@@ -2839,7 +2923,7 @@ function modal(html, onMount) {
 }
 function askName(title, label, placeholder, allowLocal, cb) {
   modal(`<h2>${esc(title)}</h2><label class="label" for="nmIn">${esc(label)}</label><input type="text" id="nmIn" placeholder="Escreva um nome (ex.: ${esc(placeholder)})" maxlength="40">
-    ${allowLocal && curSid !== STAGE ? `<label class="row"><input type="checkbox" id="nmLocal"> Só para este ator (cada clone tem a sua)</label>` : ""}
+    ${allowLocal && curSid !== STAGE ? `<label class="row"><input type="checkbox" id="nmLocal"> Só para este ator (os outros atores não usam esta)</label>` : ""}
     <div class="row"><button class="btn primary" id="nmOk">Criar</button><button class="btn" data-close>Cancelar</button></div>`, (m, close) => {
     const go = () => { const v = $("#nmIn").value || placeholder; const local = $("#nmLocal")?.checked; close(); cb(v, local); };
     $("#nmOk").onclick = go; $("#nmIn").addEventListener("keydown", e => { if (e.key === "Enter") go(); }); setTimeout(() => $("#nmIn")?.focus(), 30);
@@ -3622,16 +3706,27 @@ function startMission(m) {
   mission = { m, idx: -1, card, hand, ring, ghost, t0: now() };
   lessonRan.flag = false; lessonRan.key = false;
   mission.timer = setInterval(checkMission, 350);
+  // Confere logo depois de cada mudança nos blocos, sem esperar o próximo tique
+  mission.listener = e => { if (!e.isUiEvent || e.type === Blockly.Events.BLOCK_DRAG) { setTimeout(checkMission, 0); setTimeout(checkMission, 150); } };
+  ws.addChangeListener(mission.listener);
   checkMission(); handLoop();
 }
 function stopMission(silent) {
   if (!mission) return;
-  clearInterval(mission.timer); cancelAnimationFrame(mission.raf);
+  clearInterval(mission.timer); cancelAnimationFrame(mission.raf); ws.removeChangeListener(mission.listener);
   mission.card.remove(); mission.hand.remove(); mission.ring.remove(); mission.ghost.remove();
   mission = null;
   if (!silent) narrate("Missão fechada. Você pode voltar a ela na aba Lições.");
 }
-function stepState(m) { return m.steps.map(s => { try { return !!s.done(); } catch (_) { return false; } }); }
+// “Abra a categoria” fica feito depois de feito: a paleta fecha sozinha ao soltar e o passo não deve voltar
+function stepState(m) {
+  return m.steps.map((s, i) => {
+    if (mission?.sticky?.has(i)) return true;
+    let ok = false; try { ok = !!s.done(); } catch (_) {}
+    if (ok && s.point?.cat) (mission.sticky ||= new Set()).add(i);
+    return ok;
+  });
+}
 function checkMission() {
   if (!mission) return;
   if (curSid && !busyEditing()) diffWorkspace(); // confere já o que está na tela, sem esperar o salvamento
@@ -3671,7 +3766,7 @@ function sayAloud(text, btn) {
 }
 function finishMission() {
   const { m, card } = mission;
-  clearInterval(mission.timer); cancelAnimationFrame(mission.raf);
+  clearInterval(mission.timer); cancelAnimationFrame(mission.raf); ws.removeChangeListener(mission.listener);
   mission.hand.remove(); mission.ring.remove(); mission.ghost.remove();
   missionDone[m.id] = true; try { localStorage.setItem("bab-missoes", JSON.stringify(missionDone)); } catch (_) {}
   const next = MISSIONS.find(x => !missionDone[x.id]);
@@ -3723,35 +3818,40 @@ function flyoutBlockRect(type) {
   const b = fo.getWorkspace().getTopBlocks(false).find(x => x.type === type);
   if (!b) return null;
   const r = b.getSvgRoot().getBoundingClientRect(), box = fo.getWorkspace().getParentSvg().getBoundingClientRect();
-  if (r.top > box.bottom - 10 || r.bottom < box.top + 10) { // fora da parte visível: rola a paleta até ele
+  if (r.bottom > box.bottom - 4 || r.top < box.top + 4) { // cortado ou fora da parte visível: rola a paleta até ele
     try { fo.getWorkspace().scrollbar?.set(0, Math.max(0, b.getRelativeToSurfaceXY().y * fo.getWorkspace().scale - 40)); } catch (_) {}
     return null;
   }
   return r;
 }
+// A mãozinha toca perto do canto de baixo à direita, para não cobrir o texto do botão ou da categoria
+const tapAt = r => ({ x: r.left + r.width * .8, y: r.top + r.height * .72 });
 // Devolve o que desenhar agora: anel (ring), mãozinha parada (tap) ou arrastando (from → to)
 function aim() {
   const p = mission.m.steps[mission.idx].point || {};
   if (p.drag) {
     const r = flyoutBlockRect(p.drag);
-    if (!r) { const c = catRect(DEF[p.drag].cat); return c ? { ring: c, tap: { x: c.left + c.width / 2, y: c.top + c.height / 2 }, hint: `Primeiro abra ${CAT[DEF[p.drag].cat][0]}.` } : null; }
+    // “Primeiro abra…” só depois de um tempinho: logo após soltar um bloco a paleta fecha e o passo ainda está sendo conferido
+    if (!r) { mission.closedAt ||= now(); const c = catRect(DEF[p.drag].cat); return c ? { ring: c, tap: tapAt(c), hint: now() - mission.closedAt > 1500 ? `Primeiro abra ${CAT[DEF[p.drag].cat][0]}.` : null } : null; }
+    mission.closedAt = 0;
     const to = dropPoint(p);
     if (p.to || p.into || p.slot) { // o lugar de soltar ficou atrás da paleta aberta: rola a área de código
       const fr = ws.getToolbox().getFlyout().getWorkspace().getParentSvg().getBoundingClientRect(), area = $("#blocklyDiv").getBoundingClientRect();
       if (area.right - fr.right < 170) {} // tela estreita: não dá para mostrar os dois lado a lado
       else if (to.x < fr.right + 30) ws.scroll(ws.scrollX + (fr.right + 80 - to.x), ws.scrollY);
       else if (to.x > area.right - 40) ws.scroll(ws.scrollX - (to.x - area.right + 120), ws.scrollY);
-      if (to.y > area.bottom - 30 || to.y < area.top + 30) ws.scroll(ws.scrollX, ws.scrollY - (to.y - (area.top + area.height * .4)));
+      const cr = mission.card.getBoundingClientRect();
+      if (to.y > area.bottom - 30 || to.y < area.top + 30 || (to.x > cr.left - 20 && to.y > cr.top - 20)) ws.scroll(ws.scrollX, ws.scrollY - (to.y - (area.top + area.height * .35)));
     }
-    return { ring: r, from: { x: r.left + 18, y: r.top + r.height / 2 }, to, label: blockLabel(p.drag), color: CAT[DEF[p.drag].cat][1] };
+    return { ring: r, from: { x: r.left + 10, y: r.bottom - 2 }, to, label: blockLabel(p.drag), color: CAT[DEF[p.drag].cat][1] };
   }
-  if (p.cat) { const c = catRect(p.cat); return c && { ring: c, tap: { x: c.left + c.width / 2, y: c.top + c.height / 2 } }; }
-  if (p.el) { const r = $(p.el).getBoundingClientRect(); return { ring: r, tap: { x: r.left + r.width / 2, y: r.top + r.height / 2 } }; }
+  if (p.cat) { const c = catRect(p.cat); return c && { ring: c, tap: tapAt(c) }; }
+  if (p.el) { const r = $(p.el).getBoundingClientRect(); return { ring: r, tap: tapAt(r) }; }
   if (p.stage) { const r = $("#stage").getBoundingClientRect(); return { ring: r, tap: { x: r.left + r.width / 2, y: r.top + r.height / 2 } }; }
   if (p.sprite !== undefined) {
     const sid = p.sprite ? spriteByName(p.sprite)?.[0] : spriteList()[0]?.[0];
     const el = sid && document.querySelector(`#tiles [data-sid="${CSS.escape(sid)}"]`); if (!el) return null;
-    const r = el.getBoundingClientRect(); return { ring: r, tap: { x: r.left + r.width / 2, y: r.top + r.height / 2 } };
+    const r = el.getBoundingClientRect(); return { ring: r, tap: tapAt(r) };
   }
   if (p.field) { const b = findWs(p.field[0]), el = b?.getField(p.field[1])?.getSvgRoot?.(); if (!el) return null; const r = el.getBoundingClientRect(); return { ring: r, tap: { x: r.right - 10, y: r.top + r.height / 2 } }; }
   if (p.num) { const b = findWs(p.num[0]), sh = b?.getInput(p.num[1])?.connection?.targetBlock(); if (!sh) return null; const r = sh.getSvgRoot().getBoundingClientRect(); return { ring: r, tap: { x: r.left + r.width / 2, y: r.top + r.height / 2 } }; }
@@ -3762,7 +3862,7 @@ function handLoop() {
   if (!mission) return;
   mission.raf = requestAnimationFrame(handLoop);
   const { hand, ring, ghost, card } = mission;
-  const hide = () => { hand.style.display = ring.style.display = ghost.style.display = "none"; };
+  const hide = () => { hand.style.display = ring.style.display = ghost.style.display = "none"; card.querySelector(".m-hint")?.remove(); };
   if (card.classList.contains("min") || $("#paneCode").hidden || ws.isDragging() || $("#modalRoot").children.length || Blockly.DropDownDiv.isVisible() || Blockly.WidgetDiv.isVisible()) return hide();
   let a = null; try { a = aim(); } catch (_) {}
   if (!a) return hide();
@@ -3791,8 +3891,9 @@ function handLoop() {
 
 // Primeira visita: oferece a primeira missão
 setTimeout(() => {
-  let seen = true; try { seen = localStorage.getItem("bab-boasvindas") === "1"; localStorage.setItem("bab-boasvindas", "1"); } catch (_) {}
+  let seen = true; try { seen = localStorage.getItem("bab-boasvindas") === "1"; } catch (_) {}
   if (seen || mission || ![1, 2].includes(curLevel().n) || $("#modalRoot").children.length) return;
+  try { localStorage.setItem("bab-boasvindas", "1"); } catch (_) {}
   modal(`<div class="m-top" style="display:flex;gap:12px;align-items:center"><img alt="" style="width:56px" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(LIB["robo-a"].svg)}"><h2>Oi! Vamos criar o seu primeiro programa?</h2></div>
     <p style="margin:0">Uma mãozinha vai mostrar onde clicar e o que arrastar. Leva uns 2 minutos.</p>
     <div class="row"><button class="btn primary" id="wGo">Começar a primeira missão</button><button class="btn" data-close>Agora não</button></div>`, (mm, close) => { $("#wGo").onclick = () => { close(); askMission(MISSIONS[0].id); }; });
@@ -3804,24 +3905,38 @@ setTimeout(() => {
 $("#flagBtn").onclick = () => { actx(); greenFlag(); };
 $("#stopBtn").onclick = () => stopAll();
 $("#stepBtn").onclick = () => { stepToken++; };
-$("#speedSel").onchange = () => { if ($("#speedSel").value === "normal") { ws.highlightBlock(null); $("#stepBtn").hidden = true; } };
+$("#speedSel").onchange = () => { rt.threads.forEach(th => th.laps?.forEach(l => { l.i = 0; })); if ($("#speedSel").value === "normal") { ws.highlightBlock(null); $("#stepBtn").hidden = true; } };
 $("#turboChk").onchange = e => { rt.turbo = e.target.checked; };
 function setLevel(n, quiet) {
   $("#levelSel").value = String(n);
   const lv = curLevel();
   document.body.dataset.level = lv.n;
-  ws.updateToolbox(buildToolbox()); try { ws.getToolbox()?.refreshSelection?.(); } catch (_) {}
+  const open = ws.getToolbox()?.getSelectedItem?.()?.getName?.();
+  ws.updateToolbox(buildToolbox()); if (open) openCategory(open.replace(/^🔒 /, "")); // subiu por uma categoria trancada: abre ela já liberada
   try { localStorage.setItem("bab-nivel", String(lv.n)); } catch (_) {}
   if (!quiet) narrate(`${lv.name}: ${lv.about}${lv.n ? " Você pode trocar de nível quando quiser." : ""}`);
   renderLesson();
 }
 $("#levelSel").onchange = () => setLevel($("#levelSel").value);
+$("#levelHelp").onclick = () => modal(`<h2>O que são os níveis?</h2>
+  <p style="margin:0">Cada nível mostra só os blocos daquele momento, para quem está começando não se perder. Nada some do projeto: os blocos já montados continuam lá.</p>
+  <ul class="issues">${LEVELS.map(l => `<li class="${String(l.n) === $("#levelSel").value ? "" : "tip"}"><strong>${esc(l.name)}${String(l.n) === $("#levelSel").value ? " · você está aqui" : ""}</strong><span>${esc(l.about)}</span></li>`).join("")}</ul>
+  <p class="muted" style="margin:0"><strong>Professor(a):</strong> para desligar os níveis, escolha “Sem níveis” na lista. A escolha fica guardada neste navegador.</p>
+  <div class="row"><button class="btn primary" data-close>Entendi</button></div>`);
 // As missões ficam na aba Lições, no fim da coluna da direita: este botão leva até lá
-$("#missionsBtn").onclick = () => {
-  document.querySelector('[data-help="lesson"]')?.click();
-  const box = $("#helpLesson"); box.scrollIntoView({ behavior: "smooth", block: "start" });
-  const list = box.querySelector(".mission-list"); list?.classList.add("bab-flash"); setTimeout(() => list?.classList.remove("bab-flash"), 2600);
-};
+$("#undoBtn").onclick = () => { const [x, y] = [ws.scrollX, ws.scrollY]; ws.undo(false); ws.scroll(x, y); narrate("Desfeito. Clique de novo para voltar mais um passo."); };
+// Ctrl+Z também funciona com o foco fora da área de código (dentro dela, o próprio Blockly cuida)
+document.addEventListener("keydown", e => {
+  if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "z" || e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+  narrate(e.shiftKey ? "Refeito." : "Desfeito. Aperte Ctrl+Z de novo para voltar mais um passo.");
+  if (e.target.closest?.("#blocklyDiv")) return;
+  e.preventDefault(); ws.undo(e.shiftKey);
+});
+$("#missionsBtn").onclick = () => modal(`<h2>🎯 Missões com a mãozinha</h2>
+  <p class="muted" style="margin:0">Escolha uma missão: uma mãozinha mostra onde clicar e o que arrastar. Elas também ficam na aba Lições.</p>
+  ${missionListHTML()}<div class="row"><button class="btn" data-close>Fechar</button></div>`, (m, close) => {
+  m.querySelectorAll("[data-mission]").forEach(b => b.onclick = () => { close(); askMission(b.dataset.mission); });
+});
 $("#tipsChk").onchange = () => { ws.updateToolbox(buildToolbox()); try { localStorage.setItem("bab-dicas", $("#tipsChk").checked ? "1" : "0"); } catch (_) {} };
 $("#projTitle").addEventListener("change", e => updateMeta({ title: e.target.value.trim() || "Meu projeto" }));
 $("#playerBtn").onclick = () => { document.body.classList.toggle("player"); $("#playerBtn").classList.toggle("on", document.body.classList.contains("player")); lastMonHTML = ""; setTimeout(() => { Blockly.svgResize(ws); renderMonitors(); }, 50); };
@@ -4135,7 +4250,7 @@ function diagnose() {
   const out = [], add = (kind, sid, blockId, title, text) => out.push({ kind, sid, blockId, title, text });
   const scripts = [...project.scripts.values()].filter(s => s.block && (s.sprite === STAGE || project.sprites.get(s.sprite) && !project.sprites.get(s.sprite).deleted));
   if (!scripts.length) { add("problem", null, null, "Ainda não há nenhum bloco", "Comece em Eventos: arraste “quando ▶ for clicado” e encaixe blocos embaixo. Se quiser ajuda, faça a primeira missão na aba Lições."); return out; }
-  const sent = new Set(), received = new Map(), varsChanged = new Set(), varsRead = new Map(), touchNames = [];
+  const sent = new Set(), received = new Map(), varsChanged = new Set(), varsRead = new Map(), touchNames = [], varsAdded = new Map(), varsReset = new Set();
   let hats = 0, keyHats = false;
   for (const s of scripts) {
     const top = s.block, d = DEF[top.type];
@@ -4161,6 +4276,8 @@ function diagnose() {
       if (tp === "ev_broadcast" || tp === "ev_broadcastwait") sent.add(b.fields?.MSG);
       if (tp === "ev_receive") received.set(b.fields?.MSG, { sid: s.sprite, id: b.id });
       if (["var_set", "var_change", "ct_foreach"].includes(tp)) varsChanged.add(b.fields?.VAR);
+      if (tp === "var_change" && !varsAdded.has(b.fields?.VAR)) varsAdded.set(b.fields?.VAR, { sid: s.sprite, id: b.id });
+      if (tp === "var_set" && top.type === "ev_flag") varsReset.add(b.fields?.VAR);
       if (tp === "var_get" && !varsRead.has(b.fields?.VAR)) varsRead.set(b.fields?.VAR, { sid: s.sprite, id: b.id });
       if (tp === "sn_touching") touchNames.push({ name: b.fields?.OBJ, sid: s.sprite, id: b.id });
       if (tp === "mv_move" && !loops.length && numIn(b, "STEPS") > 0 && numIn(b, "STEPS") <= 15 && chainTypes(top).filter(t => t === "mv_move").length === 1 && top.type === "ev_flag")
@@ -4171,6 +4288,7 @@ function diagnose() {
   for (const m of sent) if (m && !received.has(m)) add("problem", null, null, `Ninguém recebe a mensagem “${m}”`, `Algum bloco transmite “${m}”, mas nenhum ator tem “quando eu receber ${m}”. Coloque esse evento no ator que deve reagir.`);
   for (const [m, at] of received) if (m && !sent.has(m)) add("problem", at.sid, at.id, `Ninguém transmite “${m}”`, `Este script espera a mensagem “${m}”, mas nenhum bloco “transmitir ${m}” existe. Ele nunca vai começar.`);
   for (const [v, at] of varsRead) if (v && !varsChanged.has(v)) add("tip", at.sid, at.id, `A variável “${v}” nunca muda`, `Nenhum bloco “definir ${v} como” ou “adicionar … a ${v}” existe, então ela fica sempre com o mesmo valor.`);
+  for (const [v, at] of varsAdded) if (v && !varsReset.has(v)) add("tip", at.sid, at.id, `“${v}” não volta a 0 quando o jogo começa`, `Nenhum “quando ▶ for clicado” tem “definir ${v} como 0”, então a contagem continua de onde parou na última vez. Coloque esse bloco (Variáveis) logo embaixo do “quando ▶ for clicado”.`);
   const names = new Set(spriteList().map(([, s]) => s.name));
   for (const t of touchNames) if (t.name && !t.name.startsWith("_") && !names.has(t.name)) add("problem", t.sid, t.id, `Não existe ator chamado “${t.name}”`, "Este “tocando em” procura um ator que foi apagado ou mudou de nome. Clique na setinha ▾ e escolha de novo.");
   for (const [sid, sp] of spriteList()) {
@@ -4296,7 +4414,8 @@ function makeGen(L, comments) {
     return out;
   }
   function body(b, name, ind) { const inner = b.inputs?.[name]?.block; const s = inner ? stmts(inner, ind) : []; return s.length ? s : [ind + (py ? "pass" : "// (vazio)")]; }
-  const line = (ind, code, b) => ind + code + (comments && DEF[b.type] ? (py ? "  # " : "  // ") + shortTip(DEF[b.type].tip) : "");
+  // O comentário vai na linha de cima (como se escreve de verdade), assim as linhas não ficam compridas demais
+  const line = (ind, code, b) => (comments && DEF[b.type] ? ind + (py ? "# " : "// ") + shortTip(DEF[b.type].tip) + "\n" : "") + ind + code;
   function stmt(b, ind) {
     const X = n => x(b, n), P = n => xp(b, n), I2 = ind + (py ? "    " : "\t");
     const one = code => [line(ind, code, b)];
@@ -4427,7 +4546,9 @@ function generateCode(L, scope, comments) {
   const targets = scope === "project" ? [[STAGE, "Palco"], ...spriteList().map(([id, s]) => [id, s.name])] : [[curSid, curSid === STAGE ? "Palco" : curDoc()?.name || "Ator"]];
   const used = new Map(); const fname = base => { const n = (used.get(base) || 0) + 1; used.set(base, n); return n > 1 ? `${base}_${n}` : base; };
   const out = [], flags = [];
-  const globals = [...live(project.meta.vars).map(([, v]) => [v.name, v.value]), ...targets.flatMap(([sid]) => live(docOf(sid)?.vars).map(([, v]) => [v.name, v.value]))];
+  // Valor de agora: o do jogo rodando, se houver (variável do ator fica no ator, a do projeto em rt.vars)
+  const nowVal = (sid, v) => { const t = rt.targets.find(x => x.sid === sid && !x.clone); return t?.vars?.has(v.name) ? t.vars.get(v.name) : rt.vars.has(v.name) ? rt.vars.get(v.name) : v.value; };
+  const globals = [...new Map([...live(project.meta.vars).map(([, v]) => [v.name, nowVal(null, v)]), ...targets.flatMap(([sid]) => live(docOf(sid)?.vars).map(([, v]) => [v.name, nowVal(sid, v)]))])];
   const lists = [...live(project.meta.lists).map(([, v]) => v.name), ...targets.flatMap(([sid]) => live(docOf(sid)?.lists).map(([, v]) => v.name))];
   const sections = [];
   for (const [sid, name] of targets) {
@@ -4476,16 +4597,17 @@ function generateCode(L, scope, comments) {
   }
   const title = scope === "project" ? project.meta.title : targets[0][1];
   if (py) {
-    out.push(`# ${title}: código gerado pelo Bloco a Bloco a partir dos seus blocos.`);
-    out.push("# Funções como mover() e dizer() têm o mesmo nome dos blocos, em português.");
-    out.push("# Atenção: “bloco_a_bloco” é uma biblioteca de faz de conta para mostrar a ideia;");
-    out.push("# a lógica (laços, se, variáveis, contas) é Python de verdade, mas este arquivo não roda sozinho.");
-    out.push("from bloco_a_bloco import *", "import random, math", "");
-    if (globals.length || lists.length) { out.push("# Variáveis e listas (com o valor que têm agora)", ...(comments ? ["# Dentro de uma função, “global” avisa que a variável é esta daqui de fora."] : [])); globals.forEach(([n, v]) => out.push(`${ident(n)} = ${typeof v === "number" || (String(v).trim() !== "" && Number.isFinite(Number(v))) ? Number(v) : quote(v)}`)); lists.forEach(n => out.push(`${ident(n)} = []`)); out.push(""); }
+    out.push(`# ${title}: os seus blocos escritos em Python.`);
+    out.push("# mover(), dizer() e outros comandos de jogo têm o nome dos blocos.");
+    out.push("# Laços, se, variáveis e contas são Python de verdade.");
+    const body = sections.flat().join("\n"), mods = ["random", "math"].filter(m => body.includes(m + "."));
+    out.push("from bloco_a_bloco import *", ...(mods.length ? [`import ${mods.join(", ")}`] : []), "");
+    if (globals.length || lists.length) { out.push("# Variáveis e listas (com o valor que têm agora)", ...(comments ? ["# Dentro de uma função, “global” quer dizer: use a variável do jogo todo, esta aqui de cima."] : [])); globals.forEach(([n, v]) => out.push(`${ident(n)} = ${typeof v === "number" || (String(v).trim() !== "" && Number.isFinite(Number(v))) ? Number(v) : quote(v)}`)); lists.forEach(n => out.push(`${ident(n)} = []`)); out.push(""); }
     sections.forEach(s => out.push(...s));
     if (!sections.length) out.push("# Ainda não há scripts aqui. Monte blocos na aba Código e volte.");
   } else {
-    out.push("programa", "{", "\tinclua biblioteca Util", "\tinclua biblioteca Matematica", "\tinclua biblioteca Texto", "");
+    const body = sections.flat().join("\n"), libs = ["Util", "Matematica", "Texto"].filter(l => body.includes(l + "."));
+    out.push("programa", "{", ...libs.map(l => `\tinclua biblioteca ${l}`), "");
     out.push(`\t// ${title}: código gerado pelo Bloco a Bloco a partir dos seus blocos.`);
     out.push("\t// Funções como mover() e dizer() têm o mesmo nome dos blocos.", "");
     if (globals.length || lists.length) { out.push("\t// Variáveis e listas"); globals.forEach(([n, v]) => { const isNum = typeof v === "number" || (String(v).trim() !== "" && Number.isFinite(Number(v))); out.push(`\t${isNum ? "real" : "cadeia"} ${ident(n)} = ${isNum ? Number(v) : quote(v)}`); }); lists.forEach(n => out.push(`\tcadeia ${ident(n)}[100]  // lista`)); out.push(""); }
@@ -4516,12 +4638,21 @@ const CODE_GUIDE = {
 };
 function renderTextCode() {
   const pane = $("#paneText"), L = codeView.lang;
+  if (curLevel().n === 1 && !codeView.peek) {
+    pane.innerHTML = `<div class="code-gate"><h3>Python e Portugol chegam no Nível 2</h3>
+      <p class="muted" style="margin:0">Aqui os seus blocos viram código escrito, igual ao que programadores usam. No Nível 1 a gente aprende primeiro com os blocos.</p>
+      <div class="row"><button class="btn primary" id="gateUp">Subir para o Nível 2</button><button class="btn" id="gatePeek">Só espiar o código</button></div></div>`;
+    $("#gateUp").onclick = () => { setLevel(2); renderTextCode(); };
+    $("#gatePeek").onclick = () => { codeView.peek = true; renderTextCode(); };
+    return;
+  }
   const code = generateCode(L, codeView.scope, codeView.comments);
   pane.innerHTML = `<div class="code-bar">
       <div class="seg" role="group" aria-label="Linguagem"><button data-lang="py" aria-pressed="${L === "py"}">Python</button><button data-lang="pt" aria-pressed="${L === "pt"}">Portugol</button></div>
       <div class="seg" role="group" aria-label="Mostrar"><button data-scope="sprite" aria-pressed="${codeView.scope === "sprite"}">${esc(curSid === STAGE ? "Palco" : curDoc()?.name || "Ator")}</button><button data-scope="project" aria-pressed="${codeView.scope === "project"}">Projeto inteiro</button></div>
       <label class="check"><input type="checkbox" id="cmtChk" ${codeView.comments ? "checked" : ""}> Explicar cada linha</label>
       <span style="flex:1"></span>
+      <span class="muted" style="font-size:.8rem">Só para ler: para mudar o código, mude os blocos.</span>
       <button class="btn small" id="copyCode">Copiar código</button><button class="btn small" id="saveCode">Baixar</button>
     </div>
     <div class="code-wrap"><pre class="code" id="codeOut" tabindex="0">${highlight(code, L)}</pre>
