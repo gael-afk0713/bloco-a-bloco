@@ -17,6 +17,8 @@ Um estúdio de jogos e animações por blocos, em português, inspirado no Scrat
 - **Níveis de blocos:** o Nível 1 mostra só uns 20 blocos (andar, falar, repetir); o Nível 2 traz “se”, “tocando em”, teclas e pontos; o Nível 3 quase tudo. “Sem níveis” mostra todos os blocos, como no Scratch. Quem abre pela primeira vez começa no Nível 1.
 - **Missões com a mãozinha:** uma mão animada mostra onde clicar e qual bloco arrastar para onde, passo a passo, e confere sozinha. São 6 missões, incluindo dois jogos meio prontos para completar (“Pegue a estrela” e “Fuja do fantasma”).
 - **🤔 Não funciona?:** procura os erros mais comuns (blocos sem evento, “se” sem condição ou fora de um “sempre”, mensagem que ninguém recebe, ator escondido ou fora do palco, animação sem espera…) e mostra o bloco com problema.
+- **▶ Ver exemplo:** clique num bloco e depois em “▶ Ver exemplo” (ou botão direito → “Ver explicação e exemplo”). Abre a explicação completa (o que faz, como usar, o que observar, uma ideia para experimentar) e uma animação curta: o bloco acende e o Faísca faz o que ele manda.
+- **Aviso do Scratch:** blocos extras do Bloco a Bloco aparecem com “⚠ Não existe no Scratch” na paleta, e um aviso aparece ao colocá-los na área de código, porque ao exportar para o Scratch eles ficam de fora ou viram outro bloco.
 - **Aprender:** explicação em português de cada bloco enquanto roda (modos “Devagar” e “Passo a passo”), clicar num script para rodar só ele, clicar num bloco de valor para ver o resultado e 10 lições em texto com conferência automática.
 - **Jogar:** tela cheia, modo jogador e turbo.
 
@@ -38,6 +40,7 @@ O programa é uma página só, montada a partir de `src/`:
 | `src/22-net.js` | Sala por código: cliente MQTT mínimo, cifra e sincronização |
 | `src/30-blocks.js` | Catálogo de blocos, Meus Blocos, caixa de ferramentas |
 | `src/35-help-texts.js` | Explicações e exemplos de cada bloco |
+| `src/37-block-guide.js` | Janela “Ver exemplo”: explicação completa e animação com o Faísca |
 | `src/40-sync.js` | Sincronização dos scripts, clicar para rodar, criador de blocos |
 | `src/50-runtime.js`, `src/55-exec.js` | Motor de execução (30 quadros/s, threads cooperativas), colisão e efeitos |
 | `src/60-stage.js` | Palco, mostradores, atores, fantasias e sons |
