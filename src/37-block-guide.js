@@ -310,6 +310,68 @@ function startDemo(type, m) {
 const safeFate = type => { try { return scratchFate(type); } catch (_) { return "ok"; } };
 // Botão na barra “Sobre o bloco” e no menu do botão direito
 $("#blockMore").onclick = () => openBlockGuide($("#blockMore").dataset.type);
+
+// =====================================================================
+// Busca de blocos (lupa): procura em todos os blocos, mesmo os que o nível esconde.
+// Sem texto, mostra os últimos blocos clicados (guardados neste navegador).
+// =====================================================================
+const searchNorm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+let blockHistory = []; try { blockHistory = JSON.parse(localStorage.getItem("bab-busca") || "[]").filter(t => typeof t === "string"); } catch (_) {}
+function rememberBlock(type) {
+  if (!type || !DEF[type] || type.startsWith("pd_")) return;
+  blockHistory = [type, ...blockHistory.filter(t => t !== type)].slice(0, 8);
+  try { localStorage.setItem("bab-busca", JSON.stringify(blockHistory)); } catch (_) {}
+}
+// Blocos que funcionam no ator (ou no palco) selecionado, mais os blocos criados em Meus Blocos
+function searchableTypes() {
+  const stage = curSid === STAGE, ok = t => DEF[t] && !(stage && !DEF[t].stageOk) && !(!stage && !DEF[t].spriteOk);
+  return [...Object.keys(DEF).filter(t => !DEF[t].hidden && !t.startsWith("proc_") && ok(t)), ...procsOf(curSid).map(([pid]) => "pc_" + pid).filter(ok)];
+}
+// Todas as palavras precisam aparecer no bloco, na dica ou na categoria; quem bate no nome do bloco vem primeiro
+function findBlocks(q) {
+  const words = searchNorm(q).split(/\s+/).filter(Boolean), whole = words.join(" ");
+  if (!words.length) return [];
+  return searchableTypes().map(t => {
+    const label = searchNorm(blockLabel(t)), all = label + " " + searchNorm(DEF[t].tip) + " " + searchNorm(CAT[DEF[t].cat]?.[0]);
+    if (!words.every(w => all.includes(w))) return null;
+    return [t, label.startsWith(whole) ? 0 : label.includes(whole) ? 1 : words.every(w => label.includes(w)) ? 2 : 3];
+  }).filter(Boolean).sort((a, b) => a[1] - b[1]).slice(0, 40).map(([t]) => t);
+}
+const bsBox = $("#blockSearch"), bsIn = $("#blockSearchIn"), bsList = $("#blockSearchList");
+let bsSel = 0;
+function renderBlockSearch() {
+  const q = bsIn.value.trim(), avail = new Set(searchableTypes());
+  const types = q ? findBlocks(q) : blockHistory.filter(t => avail.has(t));
+  $("#blockSearchTitle").textContent = q ? (types.length ? `${types.length} bloco${types.length > 1 ? "s" : ""} encontrado${types.length > 1 ? "s" : ""}` : "Nenhum bloco encontrado") : "Últimos blocos";
+  $("#blockSearchClear").hidden = !!q || !types.length;
+  bsSel = Math.min(bsSel, Math.max(0, types.length - 1));
+  bsList.innerHTML = types.length ? types.map((t, i) => {
+    const d = DEF[t], [cn, col] = CAT[d.cat] || ["", "#888"];
+    return `<li><button type="button" data-type="${esc(t)}" class="${i === bsSel ? "on" : ""}"><span class="bs-block bs-${esc(d.kind)}" style="background:${col}">${esc(blockLabel(t))}</span><span class="bs-cat">${esc(cn)}</span></button></li>`;
+  }).join("") : `<li><p class="bs-empty">${q ? "Tente outra palavra, como “mover”, “tecla” ou “som”." : "Os blocos que você clicar aparecem aqui."}</p></li>`;
+}
+function openBlockSearch() { bsBox.hidden = false; $("#blockSearchBtn").setAttribute("aria-expanded", "true"); bsIn.value = ""; bsSel = 0; renderBlockSearch(); bsIn.focus(); }
+function closeBlockSearch() { bsBox.hidden = true; $("#blockSearchBtn").setAttribute("aria-expanded", "false"); }
+// Abre a paleta só com o bloco escolhido, pronto para arrastar
+function pickSearchedBlock(type) {
+  rememberBlock(type); closeBlockSearch();
+  try { const tb = ws.getToolbox(); tb.clearSelection(); tb.getFlyout().show([toolboxBlock(type), ...($("#tipsChk")?.checked !== false ? tipLines(DEF[type].tip) : [])]); } catch (_) {}
+  showBlockHelp(type);
+}
+$("#blockSearchBtn").onclick = () => bsBox.hidden ? openBlockSearch() : closeBlockSearch();
+bsIn.addEventListener("input", () => { bsSel = 0; renderBlockSearch(); });
+bsIn.addEventListener("keydown", e => {
+  const btns = [...bsList.querySelectorAll("[data-type]")];
+  if (e.key === "Escape") { closeBlockSearch(); $("#blockSearchBtn").focus(); }
+  else if (e.key === "Enter") { e.preventDefault(); if (btns[bsSel]) pickSearchedBlock(btns[bsSel].dataset.type); }
+  else if ((e.key === "ArrowDown" || e.key === "ArrowUp") && btns.length) {
+    e.preventDefault(); bsSel = (bsSel + (e.key === "ArrowDown" ? 1 : -1) + btns.length) % btns.length;
+    btns.forEach((b, i) => b.classList.toggle("on", i === bsSel)); btns[bsSel].scrollIntoView({ block: "nearest" });
+  }
+});
+bsList.addEventListener("click", e => { const b = e.target.closest("[data-type]"); if (b) pickSearchedBlock(b.dataset.type); });
+$("#blockSearchClear").onclick = () => { blockHistory = []; try { localStorage.removeItem("bab-busca"); } catch (_) {} renderBlockSearch(); bsIn.focus(); };
+document.addEventListener("pointerdown", e => { if (!bsBox.hidden && !e.target.closest?.("#blockSearch, #blockSearchBtn")) closeBlockSearch(); });
 Blockly.ContextMenuRegistry.registry.register({
   id: "bab_exemplo", scopeType: Blockly.ContextMenuRegistry.ScopeType.BLOCK, weight: -3,
   displayText: () => "Ver explicação e exemplo",

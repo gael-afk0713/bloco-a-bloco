@@ -55,7 +55,7 @@ hookFlyoutHelp(); setTimeout(hookFlyoutHelp, 500);
 // O Blockly cria uma cópia a cada clique na paleta; aqui o clique só explica o bloco e só arrastar cria
 const blocklyBlockClick = Blockly.Gesture.prototype.doBlockClick;
 Blockly.Gesture.prototype.doBlockClick = function () {
-  if (this.flyout?.autoClose && this.targetBlock) { showBlockHelp((this.targetBlock.getRootBlock?.() || this.targetBlock).type); return; }
+  if (this.flyout?.autoClose && this.targetBlock) { const t = (this.targetBlock.getRootBlock?.() || this.targetBlock).type; showBlockHelp(t); rememberBlock(t); return; }
   return blocklyBlockClick.call(this);
 };
 // Na área de código, a ajuda mostra o bloco com os valores escolhidos (“quando a tecla seta para a direita…”)

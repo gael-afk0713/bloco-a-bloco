@@ -279,6 +279,21 @@ body[data-level="1"] #mExport { display: none; }
 /* Bloco que está rodando no Devagar/Passo a passo: contorno amarelo em vez de clarear (o texto branco sumia) */
 #blocklyDiv .blocklyPath[filter*="blocklyEmbossFilter"] { filter: drop-shadow(0 0 5px #ffd84a) drop-shadow(0 0 2px #ffd84a) !important; stroke: #ffd84a !important; stroke-width: 3px !important; }
 #blockMore { flex: none; margin-left: auto; align-self: center; }
+/* Busca de blocos (lupa em cima da paleta) */
+#blockSearchBtn { flex: none; align-self: center; font-size: 1rem; line-height: 1.2; padding: 3px 9px; }
+#blockSearchBtn[aria-expanded="true"] { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.bsearch { position: absolute; left: 8px; top: 58px; z-index: 85; width: min(380px, calc(100% - 16px)); max-height: min(520px, calc(100% - 70px)); display: flex; flex-direction: column; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.2); padding: 10px; }
+.bsearch input { width: 100%; border: 2px solid var(--accent); background: var(--panel-2); border-radius: 8px; padding: 7px 10px; }
+.bsearch .bs-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 26px; }
+.bsearch ul { list-style: none; margin: 0; padding: 0; overflow: auto; display: flex; flex-direction: column; gap: 3px; min-height: 0; }
+.bsearch li button { width: 100%; display: flex; align-items: center; gap: 8px; text-align: left; border: 1px solid transparent; background: transparent; border-radius: 8px; padding: 4px 6px; }
+.bsearch li button:hover, .bsearch li button.on { background: var(--panel-2); border-color: var(--line); }
+.bs-block { color: #fff; font-weight: 700; font-size: .84rem; padding: 3px 10px; border-radius: 6px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bs-block.bs-rep { border-radius: 999px; }
+.bs-block.bs-bool { border-radius: 0; padding: 3px 16px; clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%); }
+.bs-block.bs-hat { border-radius: 14px 14px 6px 6px; }
+.bs-cat { color: var(--muted); font-size: .76rem; margin-left: auto; flex: none; }
+.bs-empty { color: var(--muted); font-size: .86rem; margin: 4px 2px; }
 .bab-warn .blocklyFlyoutLabelText { font-size: 13px !important; font-weight: 700 !important; fill: #c26a00 !important; font-family: var(--f-body) !important; }
 .bab-warn-chip { display: inline-block; background: #fff1d6; color: #8a4b00; border: 1px solid #f0c27a; border-radius: 999px; padding: 0 8px; font-size: .78rem; font-weight: 700; }
 .scratch-tip { position: fixed; z-index: 90; width: 290px; padding: 9px 12px; border-radius: 10px; background: #fff1d6; color: #5a3300; border: 2px solid #f0a53a; font-size: .86rem; line-height: 1.35; box-shadow: 0 6px 18px rgba(0,0,0,.25); pointer-events: none; }
@@ -334,7 +349,12 @@ dl.guide dd { margin: 0; }
       <span class="level-wrap"><label class="editing level-pick" title="Cada nível mostra só os blocos daquele momento. Escolha “Sem níveis” para ver todos."><span class="sr-only">Nível</span><select id="levelSel" aria-label="Nível de blocos"></select></label>
       <button class="btn small" id="levelHelp" aria-label="O que são os níveis?" title="O que são os níveis?">?</button></span>
     </div>
-    <div id="paneCode"><div class="block-help" id="blockHelp" aria-live="polite"><span class="label">Sobre o bloco</span><span id="blockHelpText">Clique em qualquer bloco para ver o que ele faz e um exemplo.</span><button class="btn small primary" id="blockMore" hidden title="Explicação completa e uma animação do bloco funcionando">▶ Ver exemplo</button></div><div id="blocklyDiv"></div></div>
+    <div id="paneCode"><div class="block-help" id="blockHelp"><button class="btn small" id="blockSearchBtn" aria-label="Procurar um bloco" title="Procurar um bloco" aria-expanded="false" aria-controls="blockSearch">🔍</button><span class="label">Sobre o bloco</span><span id="blockHelpText" aria-live="polite">Clique em qualquer bloco para ver o que ele faz e um exemplo.</span><button class="btn small primary" id="blockMore" hidden title="Explicação completa e uma animação do bloco funcionando">▶ Ver exemplo</button></div>
+      <div class="bsearch" id="blockSearch" role="dialog" aria-label="Procurar blocos" hidden>
+        <input id="blockSearchIn" type="search" placeholder="Procurar bloco: mover, tecla, som…" autocomplete="off" aria-label="Nome do bloco">
+        <div class="bs-head"><span class="label" id="blockSearchTitle">Últimos blocos</span><button class="btn small" id="blockSearchClear" hidden>Limpar histórico</button></div>
+        <ul id="blockSearchList"></ul>
+      </div><div id="blocklyDiv"></div></div>
     <div id="paneText" hidden></div>
     <div id="paneCostumes" class="assets" hidden></div>
     <div id="paneSounds" class="assets" hidden></div>
