@@ -91,6 +91,28 @@ ws.addChangeListener(e => {
   if (e.isUiEvent) return;
   scheduleDiff();
 });
+const notScratch = new Map(); // id do bloco recém-criado -> tipos que não existem no Scratch
+ws.addChangeListener(e => {
+  if (applying) return;
+  if (e.type === Blockly.Events.BLOCK_CREATE && e.json) {
+    const bad = []; const walk = b => { if (!b) return; let f = "ok"; try { f = scratchFate(b.type); } catch (_) {} if (f !== "ok" && DEF[b.type]) bad.push([b.type, f]); for (const k in (b.inputs || {})) walk(b.inputs[k].block); walk(b.next?.block); };
+    walk(e.json); if (bad.length) notScratch.set(e.blockId, bad);
+  }
+  if (e.type === Blockly.Events.BLOCK_DRAG && !e.isStart && notScratch.has(e.blockId)) {
+    const bad = notScratch.get(e.blockId); notScratch.delete(e.blockId);
+    const b = ws.getBlockById(e.blockId); if (b) setTimeout(() => scratchTip(b, bad), 60);
+  }
+});
+function scratchTip(b, bad) {
+  document.querySelector(".scratch-tip")?.remove();
+  const [type, fate] = bad[0], box = b.getSvgRoot().getBoundingClientRect(), name = `“${blockLabel(type)}”`;
+  const tip = document.createElement("div"); tip.className = "scratch-tip"; tip.setAttribute("role", "status");
+  tip.innerHTML = `<strong>⚠ Atenção: ${esc(name)} ${fate === "fora" ? "não existe no Scratch" : "não existe igual no Scratch"}.</strong> ${fate === "fora" ? "Funciona aqui, mas se você exportar o projeto para o Scratch ele fica de fora." : `Ao exportar para o Scratch, ${esc(ADAPTED_TXT[type] || "vira um bloco parecido")}.`}`;
+  tip.style.left = Math.max(8, Math.min(innerWidth - 300, box.left)) + "px"; tip.style.top = Math.min(innerHeight - 90, box.bottom + 8) + "px";
+  document.body.append(tip); setTimeout(() => tip.remove(), 6000);
+  addEventListener("scroll", () => tip.remove(), { once: true, capture: true });
+  narrate(`${name} é um extra do Bloco a Bloco. ${fate === "fora" ? "No Scratch ele não existe: ao exportar, fica de fora." : "No Scratch ele vira outro bloco ao exportar."}`);
+}
 // Bloco solto pertinho de outro quase sempre é um encaixe que não pegou: avisa na hora
 ws.addChangeListener(e => {
   if (applying || e.type !== Blockly.Events.BLOCK_DRAG || e.isStart) return;

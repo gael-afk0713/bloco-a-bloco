@@ -350,7 +350,9 @@ function buildToolbox() {
     const blocks = Object.keys(DEF).filter(ok);
     if (!blocks.length && !items.length) continue;
     const tips = $("#tipsChk")?.checked !== false;
-    const withTips = blocks.flatMap(t => tips ? [toolboxBlock(t), ...tipLines(DEF[t].tip)] : [toolboxBlock(t)]);
+    const fate = t => { try { return scratchFate(t); } catch (_) { return "ok"; } }; // a tabela do Scratch só existe depois de carregar a exportação
+    const warn = t => fate(t) === "ok" ? [] : [{ kind: "sep", gap: 2 }, { kind: "label", text: fate(t) === "fora" ? "⚠ Não existe no Scratch" : "⚠ No Scratch vira outro bloco", "web-class": "bab-warn" }];
+    const withTips = blocks.flatMap(t => tips ? [toolboxBlock(t), ...tipLines(DEF[t].tip), ...warn(t)] : [toolboxBlock(t), ...warn(t)]);
     contents.push({ kind: "category", name, categorystyle: cat + "_category", contents: [...items, ...withTips] });
   }
   // Os níveis escondem blocos; esta categoria avisa que existem mais e sobe de nível com um clique

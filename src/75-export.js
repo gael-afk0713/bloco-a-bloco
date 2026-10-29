@@ -74,6 +74,12 @@ for (const [opcode, [type, inMap = {}, fMap = {}, menuMap = {}]] of Object.entri
   for (const [sF, [oF]] of Object.entries(fMap)) REV[type].fields[oF] = sF;
   for (const [sIn, [oF, menuField]] of Object.entries(menuMap)) REV[type].menus[oF] = [sIn, menuField];
 }
+// Como cada bloco vai para o Scratch: "ok" (existe lá), "adaptado" (vira outro bloco) ou "fora" (não existe lá)
+const ADAPTED_TXT = { op_pow: "vira uma conta parecida feita com outros blocos", ev_keyup: "vira “quando a tecla for pressionada”", jg_log: "vira “dizer”" };
+function scratchFate(type) {
+  if (REV[type] || /^(pd_|pc_|proc_arg|b_)/.test(type)) return "ok";
+  return ADAPTED_TXT[type] ? "adaptado" : "fora";
+}
 function invField(type, field, v) {
   if (field === "STYLE") return INV.rot[v] || "all around";
   if (field === "KEY") return INV.keys[v] || v;
@@ -289,3 +295,5 @@ async function exportToScratch() {
   narrate("Arquivo .sb3 baixado. No Scratch: Arquivo → Carregar do seu computador." + msg);
 }
 $("#mExport").onclick = exportToScratch;
+
+refreshToolbox();

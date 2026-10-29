@@ -159,5 +159,7 @@ function showBlockHelp(type, json, label) {
   const name = label ? `“${label}”` : type.startsWith("pc_") || type.startsWith("pd_") ? "seu bloco" : `“${blockText({ type, fields: json?.fields || {}, inputs: json?.inputs || {} }).replace(/\(\)|<>|\[\]/g, "…")}”`;
   const ex = EXAMPLES[type] || (type.startsWith("pc_") ? "Um bloco que você criou em Meus Blocos. O que ele faz está embaixo do “definir” dele." : type.startsWith("pd_") ? "Monte embaixo deste bloco o que o seu bloco deve fazer." : "");
   const box = $("#blockHelpText");
-  box.innerHTML = `<b>${esc(name)}</b> <span class="muted">(${esc(cat)})</span> — ${esc(d.tip)}${ex ? ` <span class="muted">${esc(ex)}</span>` : ""}`;
+  const more = $("#blockMore"); if (more) { more.dataset.type = type; more.hidden = false; }
+  let fate = "ok"; try { fate = scratchFate(type); } catch (_) {}
+  box.innerHTML = `${fate !== "ok" ? `<span class="bab-warn-chip" title="Ao exportar para o Scratch, este bloco ${fate === "fora" ? "fica de fora" : "vira outro bloco"}">⚠ ${fate === "fora" ? "não existe no Scratch" : "no Scratch vira outro"}</span> ` : ""}<b>${esc(name)}</b> <span class="muted">(${esc(cat)})</span> — ${esc(d.tip)}${ex ? ` <span class="muted">${esc(ex)}</span>` : ""}`;
 }

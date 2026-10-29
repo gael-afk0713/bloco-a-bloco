@@ -278,6 +278,21 @@ body[data-level="1"] #mExport { display: none; }
 .bab-problem > .blocklyPath { filter: drop-shadow(0 0 6px #e5483d) drop-shadow(0 0 3px #e5483d); }
 /* Bloco que está rodando no Devagar/Passo a passo: contorno amarelo em vez de clarear (o texto branco sumia) */
 #blocklyDiv .blocklyPath[filter*="blocklyEmbossFilter"] { filter: drop-shadow(0 0 5px #ffd84a) drop-shadow(0 0 2px #ffd84a) !important; stroke: #ffd84a !important; stroke-width: 3px !important; }
+#blockMore { flex: none; margin-left: auto; align-self: center; }
+.bab-warn .blocklyFlyoutLabelText { font-size: 13px !important; font-weight: 700 !important; fill: #c26a00 !important; font-family: var(--f-body) !important; }
+.bab-warn-chip { display: inline-block; background: #fff1d6; color: #8a4b00; border: 1px solid #f0c27a; border-radius: 999px; padding: 0 8px; font-size: .78rem; font-weight: 700; }
+.scratch-tip { position: fixed; z-index: 90; width: 290px; padding: 9px 12px; border-radius: 10px; background: #fff1d6; color: #5a3300; border: 2px solid #f0a53a; font-size: .86rem; line-height: 1.35; box-shadow: 0 6px 18px rgba(0,0,0,.25); pointer-events: none; }
+.guide-chip { color: #fff; font-size: .78rem; padding: 2px 9px; border-radius: 999px; font-family: var(--f-body); }
+.demo-box { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 10px; align-items: start; }
+.demo-ws { height: 250px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.demo-side canvas { display: block; width: 240px; height: 180px; border: 1px solid var(--line); border-radius: 10px; background: #f7fbff; }
+.demo-narr { margin: 6px 0 0; font-size: .86rem; min-height: 3.6em; border-left: 4px solid var(--glow); padding: 4px 8px; background: var(--panel-2); border-radius: 0 8px 8px 0; }
+.demo-narr.pulse { animation: narrpulse .7s ease-out; }
+.demo-ws .blocklyPath[filter*="blocklyEmbossFilter"] { filter: drop-shadow(0 0 5px #ffd84a) drop-shadow(0 0 2px #ffd84a) !important; stroke: #ffd84a !important; stroke-width: 3px !important; }
+dl.guide { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; }
+dl.guide dt { font-weight: 700; color: var(--muted); font-size: .84rem; padding-top: 1px; }
+dl.guide dd { margin: 0; }
+@media (max-width: 620px) { .demo-box { grid-template-columns: minmax(0, 1fr); } .demo-side canvas { width: 100%; height: auto; } dl.guide { grid-template-columns: minmax(0, 1fr); } dl.guide dd { margin-bottom: 4px; } }
 .loose-tip { position: fixed; z-index: 90; width: 260px; padding: 8px 11px; border-radius: 10px; background: #e5483d; color: #fff; font-size: .86rem; line-height: 1.3; box-shadow: 0 6px 18px rgba(0,0,0,.25); pointer-events: none; }
 .bab-flash { outline: 3px solid #e5483d; outline-offset: 3px; border-radius: 6px; animation: babflash .5s ease-in-out 4 alternate; }
 @keyframes babflash { to { outline-color: transparent; } }
@@ -319,7 +334,7 @@ body[data-level="1"] #mExport { display: none; }
       <span class="level-wrap"><label class="editing level-pick" title="Cada nível mostra só os blocos daquele momento. Escolha “Sem níveis” para ver todos."><span class="sr-only">Nível</span><select id="levelSel" aria-label="Nível de blocos"></select></label>
       <button class="btn small" id="levelHelp" aria-label="O que são os níveis?" title="O que são os níveis?">?</button></span>
     </div>
-    <div id="paneCode"><div class="block-help" id="blockHelp" aria-live="polite"><span class="label">Sobre o bloco</span><span id="blockHelpText">Clique em qualquer bloco para ver o que ele faz e um exemplo.</span></div><div id="blocklyDiv"></div></div>
+    <div id="paneCode"><div class="block-help" id="blockHelp" aria-live="polite"><span class="label">Sobre o bloco</span><span id="blockHelpText">Clique em qualquer bloco para ver o que ele faz e um exemplo.</span><button class="btn small primary" id="blockMore" hidden title="Explicação completa e uma animação do bloco funcionando">▶ Ver exemplo</button></div><div id="blocklyDiv"></div></div>
     <div id="paneText" hidden></div>
     <div id="paneCostumes" class="assets" hidden></div>
     <div id="paneSounds" class="assets" hidden></div>
